@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>ShareSpend · Chuẩn thể loại</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#111827;background:#F3F4F6;display:grid;grid-template-columns:240px 1fr}
+.side{background:#fff;border-right:1px solid #E5E7EB;padding:24px 16px}
+.logo{font-weight:700;font-size:20px;color:#1CC29F;margin:0 8px 24px}
+.side a{display:block;padding:10px 12px;border-radius:8px;color:#374151;text-decoration:none;font-size:14px}
+.side a.on{background:#E8F8F3;color:#0F8F72;font-weight:600}
+main{padding:28px 32px;display:grid;grid-template-columns:1fr 1fr 1fr;grid-auto-rows:min-content;gap:20px}
+header{grid-column:1/4;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:24px}
+.btn{background:#1CC29F;color:#fff;border-radius:8px;padding:10px 16px;font-weight:600;font-size:14px}
+.card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:20px}
+.k{font-size:13px;color:#6B7280}.v{font-size:28px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+.wide{grid-column:1/3}
+h2{font-size:16px;margin-bottom:12px}
+.r{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #F3F4F6;font-size:14px}
+.g{color:#0F8F72;font-weight:600}.o{color:#E5484D;font-weight:600}
+</style></head><body>
+<nav class="side"><div class="logo">ShareSpend</div><a class="on" href="#">Dashboard</a><a href="#">Giao dịch</a><a href="#">Nhóm</a><a href="#">Công nợ</a><a href="#">Báo cáo</a><a href="#">Cài đặt</a></nav>
+<main>
+<header><h1>Dashboard</h1><span class="btn">Thêm chi phí</span></header>
+<div class="card"><div class="k">Số dư</div><div class="v">4.820.000đ</div></div>
+<div class="card"><div class="k">Bạn được nợ</div><div class="v g">375.000đ</div></div>
+<div class="card"><div class="k">Bạn nợ</div><div class="v o">210.000đ</div></div>
+<div class="card wide"><h2>Giao dịch gần đây</h2>
+<div class="r">Cà phê muối<span>−35.000đ</span></div><div class="r">Grab đi làm<span>−48.000đ</span></div><div class="r">Lương tháng 10<span class="g">+12.000.000đ</span></div><div class="r">Tiền điện nhà trọ<span>−420.000đ</span></div></div>
+<div class="card"><h2>Công nợ</h2><div class="r">An<span class="g">+125.000đ</span></div><div class="r">Bình<span class="g">+125.000đ</span></div><div class="r">Cường<span class="g">+125.000đ</span></div><div class="r">Linh<span class="o">−210.000đ</span></div></div>
+<div class="card wide" style="height:260px"><h2>Chi tiêu theo tháng</h2></div>
+<div class="card" style="height:260px"><h2>Theo danh mục</h2></div>
+</main></body></html>
+

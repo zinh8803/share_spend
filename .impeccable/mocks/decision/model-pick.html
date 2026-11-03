@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>ShareSpend · Photobooth 4 Khung</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;font-family:'Be Vietnam Pro',sans-serif;color:#222;background:#EDE6FF;display:grid;grid-template-rows:72px 1fr}
+.top{display:flex;align-items:center;gap:28px;padding:0 40px;background:#fff;border-bottom:3px solid #222}
+.logo{font-weight:800;font-size:24px;margin-right:24px}
+.top a{color:#222;text-decoration:none;font-weight:600;font-size:15px;padding:8px 14px;border-radius:999px}
+.top a.on{background:#C9B6FF}
+.top .btn{margin-left:auto;background:#222;color:#fff;border-radius:999px;padding:12px 20px;font-weight:600}
+.wrap{display:grid;grid-template-columns:repeat(3,200px) 1fr;gap:28px;padding:32px 40px}
+.strip{background:#fff;border:3px solid #222;border-radius:6px;padding:12px 12px 18px;display:flex;flex-direction:column;gap:10px;height:fit-content;transform:rotate(-1.5deg)}
+.strip:nth-child(2){transform:rotate(1.2deg);margin-top:24px}
+.strip:nth-child(3){transform:rotate(-.6deg);margin-top:8px}
+.strip.on{outline:6px solid #FF8FB1}
+.f{height:118px;border-radius:4px;display:grid;place-items:center;font-weight:800;font-size:13px}
+.cap{font-family:'Patrick Hand';font-size:22px;text-align:center;line-height:1}
+.d{font-family:'Patrick Hand';font-size:16px;text-align:center;opacity:.6}
+.panel{background:#fff;border:3px solid #222;border-radius:20px;padding:28px 32px;display:flex;flex-direction:column;gap:18px}
+h1{font-size:30px;font-weight:800}
+.sub{opacity:.65}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.st{background:#A8D8FF;border-radius:14px;padding:16px}
+.st:nth-child(2){background:#FFD6E2}.st:nth-child(3){background:#E5DCFF}
+.st .k{font-size:13px;font-weight:600;opacity:.7}.st .v{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.row{display:grid;grid-template-columns:52px 1fr 1fr auto;align-items:center;gap:14px;padding:12px 0;border-top:2px dashed #ddd}
+.av{width:52px;height:52px;border-radius:8px;border:3px solid #222;display:grid;place-items:center;font-weight:800}
+.amt{font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+.hand{font-family:'Patrick Hand';font-size:20px;color:#7A5CFF}
+.pay{border:2px solid #222;border-radius:999px;padding:8px 16px;font-weight:600;background:#fff}
+</style></head><body>
+<div class="top"><div class="logo">ShareSpend</div><a href="#">Tổng quan</a><a href="#">Giao dịch</a><a class="on" href="#">Nhóm</a><a href="#">Báo cáo</a><span class="btn">Tạo khoản chi</span></div>
+<div class="wrap">
+<div class="strip on"><div class="f" style="background:#C9B6FF">Vinh</div><div class="f" style="background:#A8D8FF">An</div><div class="f" style="background:#FFD6E2">Bình</div><div class="f" style="background:#FFF1A8">Cường</div><div class="cap">Đà Lạt 2026</div><div class="d">12 khoản · 4.2tr</div></div>
+<div class="strip"><div class="f" style="background:#FFD6E2">Linh</div><div class="f" style="background:#C9B6FF">Vinh</div><div class="f" style="background:#A8D8FF">Huy</div><div class="cap">Nhà trọ Q.7</div><div class="d">tiền điện chưa xong</div></div>
+<div class="strip"><div class="f" style="background:#FFF1A8">Team</div><div class="f" style="background:#A8D8FF">ăn</div><div class="cap">Team ăn trưa</div><div class="d">đã cân bằng</div></div>
+<section class="panel">
+<div><h1>Nhóm đi Đà Lạt</h1><div class="sub">4 thành viên · tạo bởi Vinh</div></div>
+<div class="stats"><div class="st"><div class="k">Tổng chi nhóm</div><div class="v">4.200.000đ</div></div><div class="st"><div class="k">Bạn cần nhận</div><div class="v">375.000đ</div></div><div class="st"><div class="k">Còn chưa trả</div><div class="v">375.000đ</div></div></div>
+<div>
+<div class="row"><div class="av" style="background:#A8D8FF">A</div><div><b>An</b> nợ Vinh</div><div class="hand">lẩu gà lá é tối qua</div><div class="amt">125.000đ</div></div>
+<div class="row"><div class="av" style="background:#FFD6E2">B</div><div><b>Bình</b> nợ Vinh</div><div class="hand">lẩu gà lá é tối qua</div><div class="amt">125.000đ</div></div>
+<div class="row"><div class="av" style="background:#FFF1A8">C</div><div><b>Cường</b> nợ Vinh</div><div class="hand">đã trả một phần</div><div class="amt">125.000đ</div></div>
+</div>
+<div><span class="pay">Ghi nhận thanh toán</span></div>
+</section>
+</div></body></html>
+

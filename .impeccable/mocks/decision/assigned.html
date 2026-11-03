@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>ShareSpend · Tạp Hóa Kẹo Bánh</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;font-family:'Be Vietnam Pro',sans-serif;color:#1E1B3A;background:#fff;display:grid;grid-template-columns:232px 1fr}
+.rail{background:#FF7A1A;color:#1E1B3A;padding:28px 18px;display:flex;flex-direction:column;gap:6px}
+.logo{font-family:'Baloo 2';font-weight:800;font-size:30px;line-height:1;margin:0 8px 28px;color:#fff}
+.logo b{color:#FFE14D}
+.rail a{display:block;padding:11px 14px;border-radius:14px;font-weight:700;font-size:15px;color:#1E1B3A;text-decoration:none}
+.rail a.on{background:#FFE14D}
+.rail .grp{margin-top:22px;font-size:12px;font-weight:700;letter-spacing:.04em;opacity:.7;padding:0 14px 4px}
+.rail .g{display:flex;justify-content:space-between;padding:9px 14px;font-weight:500;font-size:14px}
+.rail .g span{font-variant-numeric:tabular-nums;font-weight:700}
+main{padding:28px 36px;display:grid;grid-template-columns:1fr 400px;grid-template-rows:auto auto 1fr;gap:22px}
+header{grid-column:1/3;display:flex;justify-content:space-between;align-items:center}
+h1{font-family:'Baloo 2';font-weight:800;font-size:34px;line-height:1}
+.btn{background:#1E1B3A;color:#fff;border:0;border-radius:999px;padding:13px 22px;font:700 15px 'Be Vietnam Pro'}
+.btn.y{background:#FFE14D;color:#1E1B3A;margin-right:10px}
+.hero{background:#FFE14D;border-radius:28px;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;position:relative;overflow:hidden}
+.k{font-size:13px;font-weight:700;opacity:.7}
+.v{font-family:'Baloo 2';font-weight:800;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums}
+.v.in{color:#0E8A5A}.v.out{color:#D9246E}
+.mascot{position:absolute;right:-10px;bottom:-14px;width:130px;height:130px;border-radius:50%;background:#fff;border:4px solid #1E1B3A;display:grid;place-items:center;font:800 13px 'Baloo 2'}
+.bar{background:#fff;border:2px solid #1E1B3A;border-radius:28px;padding:24px 28px}
+.bar h2,.side h2{font-family:'Baloo 2';font-weight:800;font-size:22px;margin-bottom:4px}
+.sub{font-size:14px;opacity:.7;margin-bottom:18px}
+.candy{display:flex;height:96px;border-radius:20px;overflow:hidden;border:3px solid #1E1B3A}
+.candy div{display:flex;flex-direction:column;justify-content:center;padding:0 16px;border-right:3px dashed #1E1B3A;font-weight:700}
+.candy div:last-child{border-right:0}
+.candy b{font-family:'Baloo 2';font-size:24px;font-variant-numeric:tabular-nums}
+.side{grid-row:2/4;grid-column:2;background:#1E1B3A;color:#fff;border-radius:28px;padding:24px}
+.side .sub{color:#fff}
+.row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.14)}
+.av{width:44px;height:44px;border-radius:50%;background:#FF5FA2;display:grid;place-items:center;font:800 18px 'Baloo 2';color:#1E1B3A}
+.row .n{font-weight:700}.row .m{font-size:13px;opacity:.65}
+.row .a{font:800 20px 'Baloo 2';font-variant-numeric:tabular-nums}
+.pos{color:#3DDC97}.neg{color:#FF5FA2}
+.lit{background:rgba(61,220,151,.14);margin:0 -12px;padding:12px;border-radius:14px;border:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+.tx{border-radius:28px;border:2px solid #1E1B3A;padding:20px 28px}
+th{text-align:left;font-size:12px;opacity:.6;padding:6px 0;font-weight:700}
+td{padding:9px 0;border-top:1px solid #E7E5EE}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#FFE14D}
+.chip.p{background:#FFD3E5}.chip.m{background:#C9F5E1}
+</style></head><body>
+<nav class="rail">
+<div class="logo">Share<b>Spend</b></div>
+<a class="on" href="#">Tổng quan</a><a href="#">Giao dịch</a><a href="#">Nhóm</a><a href="#">Công nợ</a><a href="#">Báo cáo</a><a href="#">Cài đặt</a>
+<div class="grp">NHÓM CỦA BẠN</div>
+<div class="g">Nhóm đi Đà Lạt <span>+375k</span></div>
+<div class="g">Nhà trọ Q.7 <span>−210k</span></div>
+<div class="g">Team ăn trưa <span>0</span></div>
+</nav>
+<main>
+<header><h1>Chào Vinh, tháng 11 này thế nào?</h1><div><button class="btn y">Thêm thu chi</button><button class="btn">Tạo khoản chi nhóm</button></div></header>
+<section class="hero">
+<div><div class="k">Số dư tháng này</div><div class="v">4.820.000đ</div></div>
+<div><div class="k">Tổng thu</div><div class="v in">12.000.000đ</div></div>
+<div><div class="k">Tổng chi</div><div class="v out">7.180.000đ</div></div>
+<div class="mascot">minh họa</div>
+</section>
+<aside class="side">
+<h2>Ai nợ ai</h2><div class="sub">Số dư ròng giữa bạn và mọi người</div>
+<div class="row lit"><div class="av">A</div><div><div class="n">An</div><div class="m">Nhóm đi Đà Lạt · vừa cập nhật</div></div><div class="a pos">+125.000đ</div></div>
+<div class="row"><div class="av" style="background:#FFE14D">B</div><div><div class="n">Bình</div><div class="m">Nhóm đi Đà Lạt</div></div><div class="a pos">+125.000đ</div></div>
+<div class="row"><div class="av" style="background:#3DDC97">C</div><div><div class="n">Cường</div><div class="m">Nhóm đi Đà Lạt</div></div><div class="a pos">+125.000đ</div></div>
+<div class="row"><div class="av" style="background:#FF7A1A">L</div><div><div class="n">Linh</div><div class="m">Nhà trọ Q.7 · tiền điện</div></div><div class="a neg">−210.000đ</div></div>
+<div class="row"><div class="av" style="background:#C9B6FF">H</div><div><div class="n">Huy</div><div class="m">Team ăn trưa</div></div><div class="a">0đ</div></div>
+</aside>
+<section class="bar">
+<h2>Ăn tối lẩu gà lá é · 500.000đ</h2><div class="sub">Vinh trả · chia đều 4 người</div>
+<div class="candy">
+<div style="flex:1;background:#FF7A1A">Vinh<b>125.000đ</b></div>
+<div style="flex:1;background:#FFE14D">An<b>125.000đ</b></div>
+<div style="flex:1;background:#3DDC97">Bình<b>125.000đ</b></div>
+<div style="flex:1;background:#FF5FA2">Cường<b>125.000đ</b></div>
+</div>
+</section>
+<section class="tx" style="grid-column:1">
+<table><tr><th>Nội dung</th><th>Danh mục</th><th>Ngày</th><th class="r">Số tiền</th></tr>
+<tr><td>Cà phê muối</td><td><span class="chip">Ăn uống</span></td><td>03/11</td><td class="r">−35.000đ</td></tr>
+<tr><td>Grab đi làm</td><td><span class="chip p">Di chuyển</span></td><td>03/11</td><td class="r">−48.000đ</td></tr>
+<tr><td>Lương tháng 10</td><td><span class="chip m">Thu nhập</span></td><td>01/11</td><td class="r">+12.000.000đ</td></tr>
+</table></section>
+</main></body></html>
+

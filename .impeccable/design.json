@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T11:54:00+07:00",
+  "title": "Design System: ShareSpend",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Lilac Wash Ground",
+        "canonical": "#EDE6FF",
+        "tonalRamp": ["#231B3A", "#3B2E60", "#56448A", "#755FB8", "#9882DC", "#BBA9F2", "#DBD0FA", "#EDE6FF"]
+      },
+      "lilac": {
+        "role": "primary",
+        "displayName": "Booth Lilac",
+        "canonical": "#C9B6FF",
+        "tonalRamp": ["#26194D", "#3F2A7D", "#5B3EB0", "#7A5CFF", "#9980FF", "#B5A0FF", "#C9B6FF", "#EFEAFF"]
+      },
+      "pink": {
+        "role": "primary",
+        "displayName": "Selection Pink",
+        "canonical": "#FF8FB1",
+        "tonalRamp": ["#4A1226", "#7A1F3F", "#AC2E5B", "#DF487D", "#FF6B9B", "#FF8FB1", "#FFB8CE", "#FFE3EC"]
+      },
+      "sky": {
+        "role": "secondary",
+        "displayName": "Sky Frame",
+        "canonical": "#A8D8FF",
+        "tonalRamp": ["#102E4A", "#1D4E7A", "#2C72AD", "#4598DB", "#74BAFA", "#A8D8FF", "#CBE8FF", "#EAF6FF"]
+      },
+      "butter": {
+        "role": "secondary",
+        "displayName": "Butter Frame",
+        "canonical": "#FFF1A8",
+        "tonalRamp": ["#423808", "#6E5D10", "#9E8619", "#CFAF25", "#F0D354", "#FFF1A8", "#FFF7C9", "#FFFCE8"]
+      },
+      "gain": {
+        "role": "tertiary",
+        "displayName": "Receivable Emerald",
+        "canonical": "#0B7A4B",
+        "tonalRamp": ["#06331F", "#095433", "#0B7A4B", "#149E63", "#2EC282", "#69DBA8", "#A6F0CE", "#D4F5E3"]
+      },
+      "loss": {
+        "role": "tertiary",
+        "displayName": "Payable Rose",
+        "canonical": "#C2185B",
+        "tonalRamp": ["#4A0822", "#780E38", "#9E134A", "#C2185B", "#E03A7B", "#F274A5", "#F9B1CD", "#FFE0EB"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Marker Ink",
+        "canonical": "#222222",
+        "tonalRamp": ["#141414", "#222222", "#3B3946", "#55506A", "#7D7790", "#A8A2BA", "#DDD6EE", "#FFFFFF"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles and active group headers." },
+      "headline": { "displayName": "Headline", "purpose": "Stat tile values and section headers." },
+      "title": { "displayName": "Title", "purpose": "Expense titles and member names." },
+      "body": { "displayName": "Body", "purpose": "Tables, form controls, and descriptions." },
+      "hand": { "displayName": "Hand Caption", "purpose": "Photobooth strip titles and handwritten expense notes." }
+    },
+    "shadows": [
+      {
+        "name": "shadow-print",
+        "value": "0 6px 18px -8px rgb(60 30 120 / 0.35)",
+        "purpose": "Default resting elevation for panels and photobooth strips."
+      },
+      {
+        "name": "shadow-lift",
+        "value": "0 14px 30px -12px rgb(60 30 120 / 0.45)",
+        "purpose": "Hover and active selection elevation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Crisp settle for photobooth strip development and button hover lifts."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Ink Pill Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary text-only action pill with ink fill and lift on hover.",
+      "html": "<button class=\"ds-btn-ink\">Tạo khoản chi</button>",
+      "css": ".ds-btn-ink { font-family: 'Be Vietnam Pro', sans-serif; font-weight: 600; font-size: 0.95rem; background: #222222; color: #FFFFFF; border: 2px solid #222222; border-radius: 999px; padding: 11px 20px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ink:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(60, 30, 120, 0.45); } .ds-btn-ink:focus-visible { outline: 3px solid #7A5CFF; outline-offset: 2px; }"
+    },
+    {
+      "name": "Butter Secondary Pill Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary action pill for personal transactions and manual settlement.",
+      "html": "<button class=\"ds-btn-butter\">Ghi nhận thanh toán</button>",
+      "css": ".ds-btn-butter { font-family: 'Be Vietnam Pro', sans-serif; font-weight: 600; font-size: 0.95rem; background: #FFF1A8; color: #222222; border: 2px solid #222222; border-radius: 999px; padding: 11px 20px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-butter:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(60, 30, 120, 0.45); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "description": "2px ink-bordered input with lilac focus halo.",
+      "html": "<input class=\"ds-field\" value=\"500.000đ\" />",
+      "css": ".ds-field { font-family: 'Be Vietnam Pro', sans-serif; font-weight: 700; font-size: 1rem; color: #222222; background: #FFFFFF; border: 2px solid #222222; border-radius: 12px; padding: 11px 14px; font-variant-numeric: tabular-nums; transition: box-shadow 0.2s; } .ds-field:focus { outline: none; box-shadow: 0 0 0 4px #C9B6FF; }"
+    },
+    {
+      "name": "Segmented Pill Switch",
+      "kind": "nav",
+      "description": "Pill switcher used for split modes, months, and group tabs.",
+      "html": "<div class=\"ds-seg\"><button class=\"ds-on\">Chia đều</button><button>Số tiền tùy chỉnh</button><button>Tỷ lệ %</button></div>",
+      "css": ".ds-seg { display: inline-flex; gap: 2px; padding: 3px; background: #FFFFFF; border: 2px solid #222222; border-radius: 999px; font-family: 'Be Vietnam Pro', sans-serif; } .ds-seg button { border: 0; background: transparent; color: #222222; font-weight: 600; font-size: 0.88rem; padding: 7px 15px; border-radius: 999px; cursor: pointer; } .ds-seg button.ds-on { background: #C9B6FF; }"
+    },
+    {
+      "name": "Status & Category Chip",
+      "kind": "chip",
+      "description": "Compact text-only pill badge with 1.5px ink border.",
+      "html": "<span class=\"ds-chip\">Mã mời: DALAT-7K2Q</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.78rem; font-weight: 600; color: #222222; background: #C9B6FF; border: 1.5px solid #222222; border-radius: 999px; padding: 3px 11px; }"
+    },
+    {
+      "name": "Print Panel Card",
+      "kind": "card",
+      "refersTo": "card-panel",
+      "description": "White print surface with 3px ink border and soft violet shadow.",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-k\">Bạn cần nhận</div><div class=\"ds-v\">+375.000đ</div></div>",
+      "css": ".ds-panel { font-family: 'Be Vietnam Pro', sans-serif; background: #FFFFFF; color: #222222; border: 3px solid #222222; border-radius: 20px; padding: 20px 24px; box-shadow: 0 6px 18px -8px rgba(60, 30, 120, 0.35); } .ds-k { font-size: 0.78rem; font-weight: 600; color: #55506A; } .ds-v { font-size: 1.5rem; font-weight: 800; color: #0B7A4B; font-variant-numeric: tabular-nums; margin-top: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Photobooth 4 Khung",
+    "overview": "ShareSpend biến việc ghi chép chi tiêu và chia tiền nhóm thành những dải ảnh photobooth chụp cùng hội bạn. Mỗi nhóm là một dải ảnh giấy trắng viền mực đậm (3px), từng thành viên nằm trong một khung màu pastel riêng với nhân vật doodle từ thư viện mở, và phần công nợ được ghi chú bên cạnh bằng nét chữ viết tay.",
+    "keyCharacteristics": [
+      "Dải ảnh Photobooth (PhotoStrip) nghiêng nhẹ (-1.4deg đến 1.2deg) với viền chọn màu hồng (6px).",
+      "Mọi bề mặt làm việc là tấm giấy in trắng (#FFFFFF) đặt trên nền tím lilac nhạt (#EDE6FF), đóng khung bằng nét mực đen (3px solid #222222).",
+      "Minh họa dễ thương từ các thư viện mở (DiceBear Notionists, Open Peeps, Microsoft Fluent Emoji 3D) đứng độc lập như khung ảnh hoặc hình dán, không bao giờ dùng icon trang trí cho nhãn chữ.",
+      "Hai màu hướng dòng tiền (xanh lá cho khoản nhận về, hồng đậm cho khoản phải trả) được khóa chặt cho ngữ nghĩa tài chính."
+    ],
+    "rules": [
+      {
+        "name": "The Money Direction Rule",
+        "body": "Xanh lá (#0B7A4B) và hồng đậm (#C2185B) chỉ xuất hiện khi biểu thị hướng tiền (thu về / chi ra / đang nợ) hoặc lỗi biểu mẫu; tuyệt đối không dùng hai màu này để trang trí.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular VND Rule",
+        "body": "Mọi con số tiền tệ, ngày tháng và phần trăm đều bật font-variant-numeric: tabular-nums và nằm trong vùng chứa có min-w-0 overflow-hidden để các hàng số thẳng cột và không bao giờ tràn khỏi khung.",
+        "section": "typography"
+      },
+      {
+        "name": "The Text-Only Label Rule",
+        "body": "Nhãn chữ trên nút bấm, thanh điều hướng, tiêu đề và thẻ trạng thái không bao giờ đi kèm icon phía trước hoặc phía sau.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do dùng nhân vật minh họa từ DiceBear (notionists, openPeeps) và hình 3D Fluent Emoji như những tác phẩm hình ảnh độc lập trong khung ảnh hoặc ô danh mục.",
+      "Do giữ viền mực #222222 (2px–3px) nhất quán trên mọi bảng, khung ảnh và ô nhập liệu.",
+      "Do hiển thị rõ cả hai con số \"Đã trả hộ\" và \"Phần thực chịu\" trên mọi màn hình nhóm và báo cáo."
+    ],
+    "donts": [
+      "Don't gắn icon vào trước hoặc sau nhãn chữ trên nút bấm, menu điều hướng, tiêu đề hay thẻ chip.",
+      "Don't lồng thẻ .panel có viền dày bên trong một .panel khác; hãy dùng ô màu nền hoặc đường kẻ nét đứt .row-line.",
+      "Don't lưu trữ hoặc tính toán tiền VND bằng số thực dấu phẩy động (float)."
+    ]
+  }
+}
+
