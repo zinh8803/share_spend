@@ -88,9 +88,10 @@ function copyCode() {
           <button
             type="button"
             class="btn btn-sm w-full text-center"
+            :title="`Mã mời: ${group.inviteCode}`"
             @click="copyCode"
           >
-            {{ copiedCode ? 'Đã sao chép mã' : `Sao chép mã ${group.inviteCode}` }}
+            {{ copiedCode ? 'Đã sao chép mã' : 'Sao chép mã mời' }}
           </button>
         </div>
       </div>
