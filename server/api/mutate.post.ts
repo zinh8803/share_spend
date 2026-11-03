@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
     case 'createGroup': {
       return await withTransaction(async (conn) => {
         await conn.execute(
-          'INSERT INTO groups (id, name, description, group_type, status, created_by, invite_code, frame, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO `groups` (id, name, description, group_type, status, created_by, invite_code, frame, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [p.id, p.name, p.description || '', p.type || 'friends', 'active', user.id, p.inviteCode, p.frame || '#C9B6FF', p.createdAt]
         )
         await conn.execute(
@@ -109,7 +109,7 @@ export default defineEventHandler(async (event) => {
 
     case 'setGroupStatus': {
       const db = await ensureDb()
-      await db.execute('UPDATE groups SET status = ? WHERE id = ?', [p.status, p.groupId])
+      await db.execute('UPDATE `groups` SET status = ? WHERE id = ?', [p.status, p.groupId])
       return { ok: true }
     }
 

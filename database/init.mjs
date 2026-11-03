@@ -35,7 +35,7 @@ try {
       DELETE FROM expenses;
       DELETE FROM invitations;
       DELETE FROM group_members;
-      DELETE FROM groups;
+      DELETE FROM `groups`;
       DELETE FROM transactions;
       DELETE FROM users;
     `)

@@ -46,8 +46,9 @@ function isActive(item: { to: string; exact?: boolean }) {
 <template>
   <div class="min-h-dvh flex flex-col">
     <header class="sticky top-0 z-30 bg-paper border-b-[3px] border-ink px-4 sm:px-8 h-[72px] flex items-center gap-3 sm:gap-6">
-      <NuxtLink to="/" class="font-extrabold text-xl sm:text-2xl tracking-tight text-ink mr-1 sm:mr-3">
-        ShareSpend
+      <NuxtLink to="/" class="group flex items-center gap-2.5 font-extrabold text-xl sm:text-2xl tracking-tight text-ink mr-1 sm:mr-3">
+        <BrandLogo :size="36" />
+        <span>ShareSpend</span>
       </NuxtLink>
 
       <nav v-if="store.loggedIn" aria-label="Điều hướng chính" class="flex items-center gap-1 sm:gap-2 overflow-x-auto py-1">
@@ -97,6 +98,7 @@ function isActive(item: { to: string; exact?: boolean }) {
 
     <footer class="border-t-2 border-dashed border-line px-4 sm:px-8 py-5 text-xs text-ink-soft flex flex-wrap items-center justify-between gap-4 max-w-[1380px] w-full mx-auto">
       <div class="flex flex-wrap items-center gap-2.5">
+        <BrandLogo :size="22" />
         <span class="font-extrabold text-ink">ShareSpend</span>
         <span>· Sổ thu chi cá nhân & chia tiền nhóm</span>
         <span class="text-line">|</span>

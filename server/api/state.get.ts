@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
       [currentUser.id]
     )
     const [groups] = await db.query<any[]>(
-      'SELECT id, name, description, group_type AS type, status, created_by AS createdBy, invite_code AS inviteCode, created_at AS createdAt, frame FROM groups ORDER BY created_at ASC'
+      'SELECT id, name, description, group_type AS type, status, created_by AS createdBy, invite_code AS inviteCode, created_at AS createdAt, frame FROM `groups` ORDER BY created_at ASC'
     )
     const [members] = await db.query<any[]>(
       'SELECT group_id AS groupId, user_id AS userId, role, status, joined_at AS joinedAt FROM group_members'

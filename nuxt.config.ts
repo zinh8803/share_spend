@@ -26,6 +26,9 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'Ghi thu chi cá nhân, chia tiền nhóm và theo dõi ai nợ ai.' },
         { name: 'theme-color', content: '#EDE6FF' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
       ]
     }
   },
