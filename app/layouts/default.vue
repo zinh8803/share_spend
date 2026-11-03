@@ -5,7 +5,7 @@ const store = useAppStore()
 const route = useRoute()
 const router = useRouter()
 
-const publicPaths = ['/login', '/privacy', '/terms']
+const publicPaths = ['/login', '/privacy', '/terms', '/join']
 function isPublic(path: string) {
   return publicPaths.includes(path)
 }

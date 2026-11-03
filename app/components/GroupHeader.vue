@@ -18,6 +18,25 @@ function isActive(t: { to: string; exact?: boolean }) {
   if (t.exact) return route.path === t.to
   return route.path.startsWith(t.to)
 }
+
+const copiedLink = ref(false)
+async function shareLink() {
+  if (typeof window === 'undefined' || !group.value) return
+  const link = `${window.location.origin}/join?code=${encodeURIComponent(group.value.inviteCode)}`
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: group.value.name,
+        text: `Tham gia nhóm chi tiêu "${group.value.name}" trên ShareSpend:`,
+        url: link
+      })
+      return
+    } catch (_) {}
+  }
+  navigator.clipboard?.writeText(link)
+  copiedLink.value = true
+  setTimeout(() => { copiedLink.value = false }, 2000)
+}
 </script>
 
 <template>
@@ -32,6 +51,14 @@ function isActive(t: { to: string; exact?: boolean }) {
           <span class="chip" :style="{ backgroundColor: group.frame }">
             Mã mời: {{ group.inviteCode }}
           </span>
+          <button
+            type="button"
+            class="chip hover:bg-lilac cursor-pointer transition-colors"
+            title="Sao chép hoặc gửi link mời tham gia nhóm"
+            @click="shareLink"
+          >
+            {{ copiedLink ? 'Đã sao chép link' : 'Chia sẻ link nhóm' }}
+          </button>
           <span v-if="group.status === 'archived'" class="chip bg-butter">
             Đã lưu trữ · chỉ xem
           </span>

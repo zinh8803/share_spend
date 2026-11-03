@@ -14,6 +14,27 @@ const createError = ref('')
 const inviteCode = ref('')
 const joinFeedback = ref<{ ok: boolean; text: string } | null>(null)
 
+const copiedGroupId = ref<string | null>(null)
+async function shareGroupLink(group: { name: string; inviteCode: string; id: string }) {
+  if (typeof window === 'undefined') return
+  const link = `${window.location.origin}/join?code=${encodeURIComponent(group.inviteCode)}`
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: group.name,
+        text: `Tham gia nhóm chi tiêu "${group.name}" trên ShareSpend:`,
+        url: link
+      })
+      return
+    } catch (_) {}
+  }
+  navigator.clipboard?.writeText(link)
+  copiedGroupId.value = group.id
+  setTimeout(() => {
+    if (copiedGroupId.value === group.id) copiedGroupId.value = null
+  }, 2000)
+}
+
 const visibleGroups = computed(() =>
   store.myGroups.filter(g => statusFilter.value === 'all' || g.status === statusFilter.value)
 )
@@ -116,7 +137,17 @@ async function handleJoin() {
               :archived="item.group.status === 'archived'"
               @select="router.push(`/groups/${item.group.id}`)"
             />
-            <span class="chip text-xs">{{ typeLabels[item.group.type] }} · {{ item.group.inviteCode }}</span>
+            <div class="flex items-center gap-1.5 flex-wrap justify-center">
+              <span class="chip text-xs">{{ typeLabels[item.group.type] }} · {{ item.group.inviteCode }}</span>
+              <button
+                type="button"
+                class="chip text-xs hover:bg-lilac cursor-pointer transition-colors"
+                title="Sao chép hoặc gửi link mời"
+                @click.stop="shareGroupLink(item.group)"
+              >
+                {{ copiedGroupId === item.group.id ? 'Đã sao chép link' : 'Chia sẻ link' }}
+              </button>
+            </div>
           </div>
         </div>
         <DoodleScene

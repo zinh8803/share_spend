@@ -15,6 +15,25 @@ const newName = ref('')
 const newEmail = ref('')
 const feedback = ref('')
 
+const copiedLink = ref(false)
+async function shareLink() {
+  if (typeof window === 'undefined' || !group.value) return
+  const link = `${window.location.origin}/join?code=${encodeURIComponent(group.value.inviteCode)}`
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: group.value.name,
+        text: `Tham gia nhóm chi tiêu "${group.value.name}" trên ShareSpend:`,
+        url: link
+      })
+      return
+    } catch (_) {}
+  }
+  navigator.clipboard?.writeText(link)
+  copiedLink.value = true
+  setTimeout(() => { copiedLink.value = false }, 2000)
+}
+
 async function addMember() {
   feedback.value = ''
   if (!newName.value.trim() || !newEmail.value.trim()) {
@@ -43,9 +62,19 @@ async function removeMember(userId: string) {
 
     <div class="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-7 items-start">
       <div class="panel p-6 flex flex-col gap-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <h2 class="text-xl font-extrabold">Thành viên đang tham gia ({{ activeMembers.length }})</h2>
-          <span class="text-xs text-ink-soft font-semibold">Mã mời: {{ group.inviteCode }}</span>
+          <div class="flex items-center gap-2">
+            <span class="chip bg-butter">Mã mời: {{ group.inviteCode }}</span>
+            <button
+              type="button"
+              class="chip hover:bg-lilac cursor-pointer transition-colors"
+              title="Sao chép link mời nhóm"
+              @click="shareLink"
+            >
+              {{ copiedLink ? 'Đã sao chép link' : 'Chia sẻ link nhóm' }}
+            </button>
+          </div>
         </div>
 
         <p v-if="feedback" role="alert" class="field-error">{{ feedback }}</p>
@@ -134,6 +163,17 @@ async function removeMember(userId: string) {
         </div>
 
         <button type="submit" class="btn btn-ink self-start">Thêm vào dải ảnh nhóm</button>
+
+        <div class="mt-2 p-3 bg-ground rounded-xl border border-line flex flex-col gap-2">
+          <div class="text-xs text-ink-soft font-semibold">Hoặc chia sẻ link mời trực tiếp:</div>
+          <button
+            type="button"
+            class="btn bg-white hover:bg-lilac text-sm text-center cursor-pointer transition-colors"
+            @click="shareLink"
+          >
+            {{ copiedLink ? 'Đã sao chép link mời' : 'Sao chép link mời nhóm' }}
+          </button>
+        </div>
       </form>
     </div>
   </div>

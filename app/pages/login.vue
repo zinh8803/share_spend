@@ -2,6 +2,7 @@
 import { useAppStore } from '~/stores/app'
 
 const store = useAppStore()
+const route = useRoute()
 const router = useRouter()
 
 const mode = ref<'login' | 'register' | 'forgot'>('register')
@@ -44,7 +45,10 @@ async function submit() {
     } else {
       await store.login(email.value.trim(), password.value)
     }
-    router.push('/')
+    const redirect = (typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/'))
+      ? route.query.redirect
+      : '/'
+    router.push(redirect)
   } catch (e: any) {
     error.value = e?.data?.statusMessage || e?.message || 'Không thể xác thực với MySQL.'
   } finally {

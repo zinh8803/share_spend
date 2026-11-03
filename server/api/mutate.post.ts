@@ -113,6 +113,42 @@ export default defineEventHandler(async (event) => {
       return { ok: true }
     }
 
+    case 'joinByCode': {
+      const code = String(p.code || '').trim().toUpperCase()
+      if (!code) {
+        throw createError({ statusCode: 400, statusMessage: 'Vui lòng cung cấp mã mời nhóm.' })
+      }
+      return await withTransaction(async (conn) => {
+        const [rows] = await conn.query<any[]>(
+          'SELECT id, name, status FROM `groups` WHERE UPPER(invite_code) = ? LIMIT 1',
+          [code]
+        )
+        if (!rows.length) {
+          throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy nhóm với mã mời này trong MySQL.' })
+        }
+        const g = rows[0]
+        if (g.status === 'archived') {
+          throw createError({ statusCode: 400, statusMessage: 'Nhóm này đã được lưu trữ, không nhận thêm thành viên.' })
+        }
+
+        const now = new Date().toISOString().slice(0, 10)
+        await conn.execute(
+          `INSERT INTO group_members (group_id, user_id, role, status, joined_at)
+           VALUES (?, ?, 'member', 'active', ?)
+           ON DUPLICATE KEY UPDATE status = 'active'`,
+          [g.id, user.id, now]
+        )
+
+        const logId = 'a-' + Math.random().toString(36).slice(2, 10)
+        await conn.execute(
+          'INSERT INTO activity_logs (id, group_id, text, created_at) VALUES (?, ?, ?, NOW())',
+          [logId, g.id, `${user.name} tham gia nhóm qua mã mời`]
+        ).catch(() => {})
+
+        return { ok: true, groupId: g.id, groupName: g.name }
+      })
+    }
+
     case 'saveExpense': {
       const total = Math.round(Number(p.total))
       const splits: { userId: string; share: number; value: number }[] = p.splits || []

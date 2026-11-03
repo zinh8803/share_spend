@@ -30,12 +30,37 @@ const stripSlots = computed(() =>
   })
 )
 
-const copied = ref(false)
+const copiedCode = ref(false)
+const copiedLink = ref(false)
+
+function getInviteLink() {
+  if (typeof window === 'undefined' || !group.value) return ''
+  return `${window.location.origin}/join?code=${encodeURIComponent(group.value.inviteCode)}`
+}
+
+async function shareLink() {
+  if (!group.value || typeof window === 'undefined') return
+  const link = getInviteLink()
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: group.value.name,
+        text: `Tham gia nhóm chi tiêu "${group.value.name}" trên ShareSpend:`,
+        url: link
+      })
+      return
+    } catch (_) {}
+  }
+  navigator.clipboard?.writeText(link)
+  copiedLink.value = true
+  setTimeout(() => { copiedLink.value = false }, 2000)
+}
+
 function copyCode() {
   if (!group.value || typeof navigator === 'undefined') return
   navigator.clipboard?.writeText(group.value.inviteCode)
-  copied.value = true
-  setTimeout(() => { copied.value = false }, 1800)
+  copiedCode.value = true
+  setTimeout(() => { copiedCode.value = false }, 1800)
 }
 </script>
 
@@ -52,9 +77,22 @@ function copyCode() {
           :tilt="-1.2"
           selected
         />
-        <button type="button" class="btn btn-sm" @click="copyCode">
-          {{ copied ? 'Đã sao chép mã mời' : `Sao chép mã ${group.inviteCode}` }}
-        </button>
+        <div class="flex flex-col gap-2 w-full max-w-[172px]">
+          <button
+            type="button"
+            class="btn btn-sm btn-ink w-full text-center"
+            @click="shareLink"
+          >
+            {{ copiedLink ? 'Đã sao chép link' : 'Chia sẻ link nhóm' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-full text-center"
+            @click="copyCode"
+          >
+            {{ copiedCode ? 'Đã sao chép mã' : `Sao chép mã ${group.inviteCode}` }}
+          </button>
+        </div>
       </div>
 
       <div class="flex flex-col gap-6">
@@ -176,6 +214,9 @@ function copyCode() {
         </div>
       </div>
     </div>
+  </div>
+  <div v-else-if="!store.hydrated" class="panel p-8 text-center text-ink-soft">
+    Đang tải dữ liệu nhóm từ máy chủ...
   </div>
   <DoodleScene
     v-else

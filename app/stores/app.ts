@@ -378,16 +378,24 @@ export const useAppStore = defineStore('app', {
     },
 
     async joinByCode(code: string): Promise<{ ok: boolean; groupId?: string; error?: string }> {
-      const g = this.groups.find(x => x.inviteCode.toUpperCase() === code.trim().toUpperCase())
-      if (!g) return { ok: false, error: 'Không tìm thấy nhóm với mã này trong MySQL.' }
-      if (g.status === 'archived') return { ok: false, error: 'Nhóm này đã lưu trữ, không nhận thành viên mới.' }
-      const m = this.members.find(x => x.groupId === g.id && x.userId === this.meId)
-      if (m?.status === 'active') return { ok: false, groupId: g.id, error: 'Bạn đã ở trong nhóm này rồi.' }
-      await this.callApi('upsertMember', { groupId: g.id, userId: this.meId, role: m?.role || 'member', status: 'active', joinedAt: todayIso() })
-      if (m) m.status = 'active'
-      else this.members.push({ groupId: g.id, userId: this.meId, role: 'member', status: 'active', joinedAt: todayIso() })
-      await this.log(`${this.me.name} tham gia nhóm`, g.id)
-      return { ok: true, groupId: g.id }
+      const trimmed = (code || '').trim().toUpperCase()
+      if (!trimmed) {
+        return { ok: false, error: 'Vui lòng nhập mã mời.' }
+      }
+      try {
+        const res = await this.callApi('joinByCode', { code: trimmed }) as any
+        if (!res?.ok || !res?.groupId) {
+          return { ok: false, error: 'Không thể tham gia nhóm.' }
+        }
+        // Force refresh all state from MySQL so group, members, and expenses are immediately loaded
+        await this.hydrate(true)
+        return { ok: true, groupId: res.groupId }
+      } catch (e: any) {
+        return {
+          ok: false,
+          error: e?.data?.statusMessage || e?.message || 'Không tìm thấy nhóm với mã này trong MySQL.'
+        }
+      }
     },
 
     async addMember(groupId: string, name: string, email: string): Promise<string | null> {
