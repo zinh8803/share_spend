@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { useAppStore } from '~/stores/app'
 
+useHead({
+  title: 'Đăng nhập & Đăng ký · ShareSpend',
+  meta: [
+    { name: 'description', content: 'Đăng nhập hoặc tạo tài khoản ShareSpend để bắt đầu quản lý thu chi cá nhân và chia tiền nhóm cùng bạn bè.' }
+  ]
+})
+
 const store = useAppStore()
 const route = useRoute()
 const router = useRouter()
@@ -50,7 +57,7 @@ async function submit() {
       : '/'
     router.push(redirect)
   } catch (e: any) {
-    error.value = e?.data?.statusMessage || e?.message || 'Không thể xác thực với MySQL.'
+    error.value = e?.data?.statusMessage || e?.message || 'Không thể xác thực tài khoản.'
   } finally {
     submitting.value = false
   }
@@ -76,7 +83,7 @@ async function submit() {
             {{ mode === 'login' ? 'Đăng nhập vào ShareSpend' : mode === 'register' ? 'Tạo tài khoản mới' : 'Khôi phục mật khẩu' }}
           </h1>
           <p class="hand text-xl text-ink-soft mt-1">
-            Tài khoản, giao dịch và nhóm của bạn được lưu trực tiếp trong MySQL.
+            Tài khoản, giao dịch và nhóm của bạn được đồng bộ an toàn và bảo mật.
           </p>
         </div>
         <img src="/stickers/camera.png" alt="Máy ảnh" class="w-14 h-14 object-contain shrink-0" />

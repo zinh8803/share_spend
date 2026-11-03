@@ -282,7 +282,7 @@ const recentTransactions = computed(() =>
             </div>
           </div>
           <p v-else class="hand text-xl text-ink-soft py-4">
-            Chưa có giao dịch cá nhân nào. Bấm "Thêm giao dịch" để ghi nhận khoản đầu tiên vào MySQL.
+            Chưa có giao dịch cá nhân nào. Bấm "Thêm giao dịch" để ghi nhận khoản đầu tiên.
           </p>
         </div>
       </div>

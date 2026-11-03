@@ -124,7 +124,7 @@ export default defineEventHandler(async (event) => {
           [code]
         )
         if (!rows.length) {
-          throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy nhóm với mã mời này trong MySQL.' })
+          throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy nhóm với mã mời này.' })
         }
         const g = rows[0]
         if (g.status === 'archived') {

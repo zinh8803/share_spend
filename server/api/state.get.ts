@@ -132,7 +132,7 @@ export default defineEventHandler(async (event) => {
   } catch (err: any) {
     throw createError({
       statusCode: 500,
-      statusMessage: err?.message || 'Lỗi kết nối MySQL'
+      statusMessage: err?.message || 'Lỗi kết nối máy chủ'
     })
   }
 })

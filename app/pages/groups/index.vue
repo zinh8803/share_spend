@@ -208,7 +208,7 @@ async function handleJoin() {
             <div>
               <h2 class="text-xl font-extrabold">Tham gia nhóm bằng mã mời</h2>
               <p class="text-xs text-ink-soft mt-0.5">
-                Nhập mã mời do chủ nhóm chia sẻ để tham gia vào nhóm trong MySQL.
+                Nhập mã mời do chủ nhóm chia sẻ để tham gia vào nhóm.
               </p>
             </div>
             <img src="/stickers/phong-bi.png" alt="Thư mời" class="w-10 h-10 object-contain" />

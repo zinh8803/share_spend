@@ -164,7 +164,7 @@ async function handleDelete() {
     </div>
   </div>
   <div v-else-if="!store.hydrated && store.loading" class="panel p-8 text-center">
-    <p class="font-extrabold text-lg">Đang tải chi tiết hóa đơn từ MySQL...</p>
+    <p class="font-extrabold text-lg">Đang tải chi tiết hóa đơn...</p>
   </div>
   <DoodleScene
     v-else

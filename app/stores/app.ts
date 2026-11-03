@@ -74,8 +74,8 @@ export const useAppStore = defineStore('app', {
     seenDebts: {} as Record<string, number>,
     hydrated: false,
     loading: false,
-    dbStatus: 'checking' as 'checking' | 'mysql' | 'error',
-    dbInfo: 'Đang kết nối MySQL...'
+    dbStatus: 'checking' as 'checking' | 'connected' | 'error',
+    dbInfo: 'Đang kết nối...'
   }),
   getters: {
     me(s): User {
@@ -219,8 +219,8 @@ export const useAppStore = defineStore('app', {
         const res = await $fetch<any>('/api/state', {
           headers: this.getAuthHeaders()
         })
-        this.dbStatus = 'mysql'
-        this.dbInfo = 'Đang kết nối trực tiếp MySQL (database: sharespend)'
+        this.dbStatus = 'connected'
+        this.dbInfo = 'Đã kết nối máy chủ'
         if (res.data) {
           this.$patch(res.data)
         }
@@ -243,7 +243,7 @@ export const useAppStore = defineStore('app', {
         this.markAllDebtsSeen()
       } catch (e: any) {
         this.dbStatus = 'error'
-        this.dbInfo = e?.data?.statusMessage || e?.message || 'Không thể kết nối tới MySQL backend'
+        this.dbInfo = e?.data?.statusMessage || e?.message || 'Không thể kết nối tới máy chủ'
       } finally {
         this.loading = false
       }
@@ -387,13 +387,13 @@ export const useAppStore = defineStore('app', {
         if (!res?.ok || !res?.groupId) {
           return { ok: false, error: 'Không thể tham gia nhóm.' }
         }
-        // Force refresh all state from MySQL so group, members, and expenses are immediately loaded
+        // Force refresh all state so group, members, and expenses are immediately loaded
         await this.hydrate(true)
         return { ok: true, groupId: res.groupId }
       } catch (e: any) {
         return {
           ok: false,
-          error: e?.data?.statusMessage || e?.message || 'Không tìm thấy nhóm với mã này trong MySQL.'
+          error: e?.data?.statusMessage || e?.message || 'Không tìm thấy nhóm với mã này.'
         }
       }
     },

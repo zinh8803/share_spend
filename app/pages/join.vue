@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { useAppStore } from '~/stores/app'
 
+useHead({
+  title: 'Lời mời tham gia nhóm chi tiêu · ShareSpend',
+  meta: [
+    { name: 'description', content: 'Xem trước và tham gia nhóm chi tiêu chung trên ShareSpend để cùng nhau chia sẻ chi phí du lịch, ăn uống minh bạch.' }
+  ]
+})
+
 const route = useRoute()
 const router = useRouter()
 const store = useAppStore()
