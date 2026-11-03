@@ -64,6 +64,10 @@ async function submit() {
     error.value = 'Nhập số tiền lớn hơn 0 (có thể gõ nhanh như 35k hoặc 1,2tr).'
     return
   }
+  if (parsedAmount.value > 100_000_000_000) {
+    error.value = 'Số tiền tối đa cho một giao dịch là 100 tỷ đồng (100.000.000.000đ).'
+    return
+  }
   if (!description.value.trim()) {
     error.value = 'Nhập nội dung giao dịch để dễ tra cứu lại sau này.'
     return

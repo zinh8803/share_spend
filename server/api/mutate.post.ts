@@ -13,6 +13,19 @@ export default defineEventHandler(async (event) => {
 
   switch (action) {
     case 'saveTransaction': {
+      const amount = Math.round(Number(p.amount))
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw createError({
+          statusCode: 422,
+          statusMessage: 'Số tiền giao dịch phải lớn hơn 0đ.'
+        })
+      }
+      if (amount > 100_000_000_000) {
+        throw createError({
+          statusCode: 422,
+          statusMessage: 'Số tiền giao dịch không được vượt quá 100 tỷ đồng (100.000.000.000đ) / lần thêm.'
+        })
+      }
       const db = await ensureDb()
       await db.execute(
         `INSERT INTO transactions (id, user_id, type, amount, category_id, description, transaction_date, payment_method, note)
@@ -25,7 +38,7 @@ export default defineEventHandler(async (event) => {
            transaction_date = VALUES(transaction_date),
            payment_method = VALUES(payment_method),
            note = VALUES(note)`,
-        [p.id, user.id, p.type, Math.round(Number(p.amount)), p.categoryId, p.description, p.date, p.method, p.note || '']
+        [p.id, user.id, p.type, amount, p.categoryId, p.description, p.date, p.method, p.note || '']
       )
       return { ok: true }
     }
@@ -151,6 +164,18 @@ export default defineEventHandler(async (event) => {
 
     case 'saveExpense': {
       const total = Math.round(Number(p.total))
+      if (!Number.isFinite(total) || total <= 0) {
+        throw createError({
+          statusCode: 422,
+          statusMessage: 'Tổng hóa đơn phải lớn hơn 0đ.'
+        })
+      }
+      if (total > 100_000_000_000) {
+        throw createError({
+          statusCode: 422,
+          statusMessage: 'Tổng hóa đơn không được vượt quá 100 tỷ đồng (100.000.000.000đ) / lần thêm.'
+        })
+      }
       const splits: { userId: string; share: number; value: number }[] = p.splits || []
       const sumShares = splits.reduce((s, x) => s + Math.round(Number(x.share)), 0)
       if (sumShares !== total) {
@@ -196,10 +221,17 @@ export default defineEventHandler(async (event) => {
     }
 
     case 'recordSettlement': {
+      const amount = Math.round(Number(p.amount))
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw createError({ statusCode: 422, statusMessage: 'Số tiền thanh toán phải lớn hơn 0đ.' })
+      }
+      if (amount > 100_000_000_000) {
+        throw createError({ statusCode: 422, statusMessage: 'Số tiền thanh toán không được vượt quá 100 tỷ đồng.' })
+      }
       const db = await ensureDb()
       await db.execute(
         'INSERT INTO settlements (id, group_id, from_user_id, to_user_id, amount, paid_at, status, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [p.id, p.groupId, p.fromId, p.toId, Math.round(Number(p.amount)), p.date, p.status, p.note || '']
+        [p.id, p.groupId, p.fromId, p.toId, amount, p.date, p.status, p.note || '']
       )
       return { ok: true }
     }

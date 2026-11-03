@@ -437,6 +437,9 @@ export const useAppStore = defineStore('app', {
     },
 
     async saveExpense(e: Omit<Expense, 'id' | 'status' | 'createdBy' | 'createdAt' | 'updatedAt'> & { id?: string }) {
+      if (e.total <= 0 || e.total > 100_000_000_000) {
+        throw new Error('Tổng hóa đơn không được vượt quá 100 tỷ đồng / lần thêm.')
+      }
       if (e.id) {
         const cur = this.expenses.find(x => x.id === e.id)
         if (!cur || cur.status !== 'active') return null

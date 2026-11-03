@@ -127,27 +127,39 @@ async function submit() {
     formError.value = 'Nhập tên khoản chi (ví dụ: Ăn tối lẩu gà lá é).'
     return
   }
+  if (!totalAmount.value || totalAmount.value <= 0) {
+    formError.value = 'Tổng tiền hóa đơn phải lớn hơn 0đ.'
+    return
+  }
+  if (totalAmount.value > 100_000_000_000) {
+    formError.value = 'Tổng tiền hóa đơn không được vượt quá 100 tỷ đồng (100.000.000.000đ) / lần thêm.'
+    return
+  }
   if (!splitResult.value.ok) {
     formError.value = splitResult.value.error || 'Tổng phân bổ chưa khớp với hóa đơn.'
     return
   }
-  const id = await store.saveExpense({
-    id: editId.value,
-    groupId: groupId.value,
-    title: title.value.trim(),
-    total: totalAmount.value,
-    categoryId: categoryId.value,
-    date: date.value,
-    payerId: payerId.value,
-    splitType: splitType.value,
-    splits: selectedIds.value.map(uid => ({
-      userId: uid,
-      value: splitType.value === 'equal' ? 1 : Number(customValues[uid] || 0),
-      share: splitResult.value.shares[uid]
-    })),
-    note: note.value.trim()
-  })
-  if (id) router.push(`/groups/${groupId.value}/expenses/${id}`)
+  try {
+    const id = await store.saveExpense({
+      id: editId.value,
+      groupId: groupId.value,
+      title: title.value.trim(),
+      total: totalAmount.value,
+      categoryId: categoryId.value,
+      date: date.value,
+      payerId: payerId.value,
+      splitType: splitType.value,
+      splits: selectedIds.value.map(uid => ({
+        userId: uid,
+        value: splitType.value === 'equal' ? 1 : Number(customValues[uid] || 0),
+        share: splitResult.value.shares[uid]
+      })),
+      note: note.value.trim()
+    })
+    if (id) router.push(`/groups/${groupId.value}/expenses/${id}`)
+  } catch (err: any) {
+    formError.value = err?.data?.statusMessage || err?.message || 'Không thể lưu khoản chi.'
+  }
 }
 </script>
 
@@ -176,15 +188,24 @@ async function submit() {
             />
           </div>
           <div>
-            <label for="e-total" class="field-label">Tổng hóa đơn (VND)</label>
+            <div class="flex items-center justify-between mb-1">
+              <label for="e-total" class="field-label mb-0">Tổng hóa đơn (VND)</label>
+              <span v-if="totalAmount > 0" class="text-xs font-semibold text-ink-soft">
+                {{ vnd(totalAmount) }}
+              </span>
+            </div>
             <input
               id="e-total"
               v-model="totalInput"
               type="text"
               inputmode="numeric"
               class="field font-extrabold text-lg num"
-              placeholder="500000 hoặc 500k"
+              :class="totalAmount > 100000000000 ? 'border-[var(--color-loss)]' : ''"
+              placeholder="500000, 500k hoặc 1,5tỷ"
             />
+            <p v-if="totalAmount > 100000000000" role="alert" class="field-error">
+              Vượt quá giới hạn tối đa 100 tỷ đồng (100.000.000.000đ).
+            </p>
           </div>
         </div>
 

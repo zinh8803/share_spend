@@ -17,6 +17,7 @@ export function vnd(amount: number, opts: { sign?: boolean } = {}): string {
 export function vndShort(amount: number): string {
   const a = Math.abs(amount)
   const s = amount < 0 ? '−' : ''
+  if (a >= 1_000_000_000) return `${s}${(a / 1_000_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })}tỷ`
   if (a >= 1_000_000) return `${s}${(a / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })}tr`
   if (a >= 1_000) return `${s}${Math.round(a / 1_000)}k`
   return `${s}${a}đ`
@@ -26,6 +27,8 @@ export function vndShort(amount: number): string {
 export function parseVnd(input: string): number {
   const raw = input.trim().toLowerCase().replace(/\s/g, '')
   if (!raw) return 0
+  const ty = raw.match(/^([\d.,]+)(ty|ti|tỷ|b)$/)
+  if (ty) return Math.round(parseFloat(ty[1].replace(/\./g, '').replace(',', '.')) * 1_000_000_000)
   const tr = raw.match(/^([\d.,]+)(tr|m)$/)
   if (tr) return Math.round(parseFloat(tr[1].replace(/\./g, '').replace(',', '.')) * 1_000_000)
   const k = raw.match(/^([\d.,]+)k$/)
