@@ -6,9 +6,12 @@ export default defineEventHandler(async (event) => {
     const db = await ensureDb()
     const currentUser = await getActiveUser(event)
 
-    const [categories] = await db.query<any[]>('SELECT id, name, kind, sticker, hint, is_default FROM categories ORDER BY is_default DESC, name ASC')
-
+    let categories: any[] = []
     if (!currentUser) {
+      const [rows] = await db.query<any[]>(
+        'SELECT id, user_id AS userId, group_id AS groupId, name, kind, sticker, hint, is_default FROM categories WHERE is_default = 1 ORDER BY is_default DESC, name ASC'
+      )
+      categories = rows
       return {
         connected: true,
         authenticated: false,
@@ -17,6 +20,8 @@ export default defineEventHandler(async (event) => {
           users: [],
           categories: categories.map(c => ({
             id: c.id,
+            userId: c.userId || null,
+            groupId: c.groupId || null,
             name: c.name,
             kind: c.kind,
             sticker: c.sticker,
@@ -33,7 +38,35 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    const [users] = await db.query<any[]>('SELECT id, name, email, frame, gender, avatar, currency, timezone FROM users ORDER BY created_at ASC')
+    const [catRows] = await db.query<any[]>(`
+      SELECT DISTINCT
+        c.id,
+        c.user_id AS userId,
+        c.group_id AS groupId,
+        c.name,
+        c.kind,
+        c.sticker,
+        c.hint,
+        c.is_default
+      FROM categories c
+      WHERE c.is_default = 1
+         OR c.user_id = ?
+         OR c.group_id IN (
+           SELECT group_id FROM group_members WHERE user_id = ? AND status = 'active'
+         )
+         OR c.id IN (
+           SELECT DISTINCT e.category_id FROM expenses e
+           JOIN group_members gm ON e.group_id = gm.group_id
+           WHERE gm.user_id = ? AND gm.status = 'active' AND e.status = 'active'
+         )
+         OR c.id IN (
+           SELECT DISTINCT category_id FROM transactions WHERE user_id = ?
+         )
+      ORDER BY c.is_default DESC, c.name ASC
+    `, [currentUser.id, currentUser.id, currentUser.id, currentUser.id])
+    categories = catRows
+
+    const [users] = await db.query<any[]>('SELECT id, name, email, role, frame, gender, avatar, currency, timezone FROM users ORDER BY created_at ASC')
     const [transactions] = await db.query<any[]>(
       'SELECT id, type, amount, category_id AS categoryId, description, transaction_date AS date, payment_method AS method, note FROM transactions WHERE user_id = ? ORDER BY transaction_date DESC, created_at DESC',
       [currentUser.id]
@@ -122,6 +155,8 @@ export default defineEventHandler(async (event) => {
         users,
         categories: categories.map(c => ({
           id: c.id,
+          userId: c.userId || null,
+          groupId: c.groupId || null,
           name: c.name,
           kind: c.kind,
           sticker: c.sticker,

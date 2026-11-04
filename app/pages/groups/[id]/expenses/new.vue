@@ -12,7 +12,11 @@ const editId = computed(() => (typeof route.query.edit === 'string' ? route.quer
 const existing = computed(() => (editId.value ? store.expenses.find(e => e.id === editId.value) : undefined))
 
 const members = computed(() => store.groupMembers(groupId.value, false))
-const expenseCategories = computed(() => store.categories.filter(c => c.kind === 'expense'))
+const expenseCategories = computed(() =>
+  store.categories.filter(c =>
+    c.kind === 'expense' && (!c.groupId || c.groupId === groupId.value || c.id === categoryId.value)
+  )
+)
 
 const title = ref(existing.value?.title ?? '')
 const totalInput = ref(existing.value ? String(existing.value.total) : '500000')
@@ -222,7 +226,9 @@ async function submit() {
           <div>
             <label for="e-cat" class="field-label">Danh mục</label>
             <select id="e-cat" v-model="categoryId" class="field">
-              <option v-for="c in expenseCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
+              <option v-for="c in expenseCategories" :key="c.id" :value="c.id">
+                {{ c.name }}{{ c.groupId ? ' (Nhóm)' : !c.isDefault ? ' (Cá nhân)' : '' }}
+              </option>
             </select>
           </div>
 

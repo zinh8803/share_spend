@@ -47,13 +47,13 @@ export default defineEventHandler(async (event) => {
     }
 
     setCurrentUserCookie(event, userId)
-    const [rows] = await db.query<any[]>('SELECT id, name, email, frame, gender, avatar, currency, timezone FROM users WHERE id = ?', [userId])
+    const [rows] = await db.query<any[]>('SELECT id, name, email, role, frame, gender, avatar, currency, timezone FROM users WHERE id = ?', [userId])
     return { ok: true, user: rows[0] }
   }
 
   // mode === 'login'
   const [rows] = await db.query<any[]>(
-    'SELECT id, name, email, password_hash, frame, gender, avatar, currency, timezone FROM users WHERE LOWER(email) = ? LIMIT 1',
+    'SELECT id, name, email, role, password_hash, frame, gender, avatar, currency, timezone FROM users WHERE LOWER(email) = ? LIMIT 1',
     [email]
   )
   if (!rows.length) {
@@ -76,6 +76,7 @@ export default defineEventHandler(async (event) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role || 'user',
       frame: user.frame,
       gender: user.gender || 'male',
       avatar: user.avatar || 'boy-cool',

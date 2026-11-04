@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` VARCHAR(120) NOT NULL,
   `email` VARCHAR(190) NOT NULL UNIQUE,
   `password_hash` VARCHAR(255) DEFAULT NULL,
+  `role` ENUM('user', 'admin') NOT NULL DEFAULT 'user',
   `frame` VARCHAR(16) NOT NULL DEFAULT '#C9B6FF',
   `gender` VARCHAR(16) NOT NULL DEFAULT 'male',
   `avatar` VARCHAR(64) NOT NULL DEFAULT 'boy-cool',
@@ -22,11 +23,15 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 CREATE TABLE IF NOT EXISTS `categories` (
   `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+  `user_id` VARCHAR(36) DEFAULT NULL,
+  `group_id` VARCHAR(36) DEFAULT NULL,
   `name` VARCHAR(120) NOT NULL,
   `kind` ENUM('income', 'expense') NOT NULL DEFAULT 'expense',
   `sticker` VARCHAR(64) NOT NULL DEFAULT 'khac',
   `hint` VARCHAR(255) NOT NULL DEFAULT '',
-  `is_default` TINYINT(1) NOT NULL DEFAULT 0
+  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+  INDEX `idx_cat_user` (`user_id`),
+  INDEX `idx_cat_group` (`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT IGNORE INTO `categories` (`id`, `name`, `kind`, `sticker`, `hint`, `is_default`) VALUES
@@ -156,5 +161,17 @@ CREATE TABLE IF NOT EXISTS `activity_logs` (
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_act_group` (`group_id`),
   INDEX `idx_act_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `feedbacks` (
+  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+  `user_id` VARCHAR(36) DEFAULT NULL,
+  `email` VARCHAR(190) NOT NULL,
+  `content` TEXT NOT NULL,
+  `status` ENUM('pending', 'read', 'resolved') NOT NULL DEFAULT 'pending',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_fb_user` (`user_id`),
+  INDEX `idx_fb_status` (`status`),
+  INDEX `idx_fb_created` (`created_at` DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

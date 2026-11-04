@@ -32,13 +32,14 @@ export interface User {
   id: string
   name: string
   email: string
+  role?: 'user' | 'admin'
   frame: string
   gender?: Gender
   avatar?: string
   currency?: string
   timezone?: string
 }
-export interface Category { id: string; name: string; kind: TxType; sticker: string; hint: string; isDefault: boolean }
+export interface Category { id: string; name: string; kind: TxType; sticker: string; hint: string; isDefault: boolean; userId?: string | null; groupId?: string | null }
 export interface Transaction { id: string; type: TxType; amount: number; categoryId: string; description: string; date: string; method: PayMethod; note: string }
 export interface Group { id: string; name: string; description: string; type: GroupType; status: 'active' | 'archived'; createdBy: string; inviteCode: string; createdAt: string; frame: string }
 export interface Member { groupId: string; userId: string; role: Role; status: 'active' | 'left'; joinedAt: string }
@@ -83,6 +84,7 @@ export const useAppStore = defineStore('app', {
         id: s.meId || 'guest',
         name: 'Khách',
         email: '',
+        role: 'user',
         frame: '#C9B6FF',
         gender: 'male',
         avatar: 'boy-cool'
@@ -347,7 +349,13 @@ export const useAppStore = defineStore('app', {
 
     async saveCategory(c: Omit<Category, 'id' | 'isDefault'> & { id?: string }) {
       const id = c.id || uid('c')
-      const record: Category = { ...c, id, isDefault: false }
+      const record: Category = {
+        ...c,
+        id,
+        isDefault: false,
+        userId: c.userId || this.meId,
+        groupId: c.groupId || null
+      }
       await this.callApi('saveCategory', record)
       const existing = this.categories.find(x => x.id === id)
       if (existing) Object.assign(existing, record)

@@ -23,14 +23,22 @@ watch(() => [store.hydrated, store.loggedIn, route.path], ([ready, logged, path]
   }
 })
 
-const navItems = [
-  { to: '/', label: 'Tổng quan', exact: true },
-  { to: '/transactions', label: 'Giao dịch' },
-  { to: '/groups', label: 'Nhóm' },
-  { to: '/reports', label: 'Báo cáo' },
-  { to: '/categories', label: 'Danh mục' },
-  { to: '/settings', label: 'Cài đặt' }
-]
+const showFeedbackModal = ref(false)
+
+const navItems = computed(() => {
+  const items = [
+    { to: '/', label: 'Tổng quan', exact: true },
+    { to: '/transactions', label: 'Giao dịch' },
+    { to: '/groups', label: 'Nhóm' },
+    { to: '/reports', label: 'Báo cáo' },
+    { to: '/categories', label: 'Danh mục' },
+    { to: '/settings', label: 'Cài đặt' }
+  ]
+  if (store.me?.role === 'admin') {
+    items.push({ to: '/admin', label: 'Quản trị' })
+  }
+  return items
+})
 
 const defaultCreateExpenseLink = computed(() => {
   const firstActive = store.myGroups.find(g => g.status === 'active')
@@ -64,7 +72,16 @@ function isActive(item: { to: string; exact?: boolean }) {
         </NuxtLink>
       </nav>
 
-      <div class="ml-auto flex items-center gap-2.5 shrink-0">
+      <div class="ml-auto flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <button
+          type="button"
+          @click="showFeedbackModal = true"
+          class="btn btn-sm bg-blush hover:bg-pink text-ink font-semibold"
+          title="Đóng góp ý kiến"
+        >
+          Đóng góp ý kiến
+        </button>
+
         <template v-if="store.loggedIn">
           <NuxtLink
             to="/transactions/new"
@@ -91,6 +108,8 @@ function isActive(item: { to: string; exact?: boolean }) {
         </NuxtLink>
       </div>
     </header>
+
+    <FeedbackModal v-model="showFeedbackModal" />
 
     <main class="flex-1 w-full max-w-[1380px] mx-auto px-4 sm:px-8 py-6 sm:py-8">
       <slot />

@@ -51,9 +51,42 @@ export async function ensureDb(): Promise<Pool> {
     })
   }
 
-  // Auto-migrate user_id column into activity_logs if missing & backfill old logs
+  // Auto-migrate role column into users and ensure feedbacks table
   if (!activityMigrated && pool) {
     try {
+      const [roleCols] = await pool.query<any[]>('SHOW COLUMNS FROM users LIKE "role"')
+      if (!roleCols.length) {
+        await pool.query("ALTER TABLE users ADD COLUMN `role` ENUM('user', 'admin') NOT NULL DEFAULT 'user' AFTER `password_hash`")
+      }
+
+      const [adminRows] = await pool.query<any[]>("SELECT COUNT(*) AS total FROM users WHERE role = 'admin'")
+      if (!adminRows[0]?.total) {
+        const [firstUser] = await pool.query<any[]>("SELECT id FROM users ORDER BY created_at ASC LIMIT 1")
+        if (firstUser.length > 0) {
+          await pool.execute("UPDATE users SET role = 'admin' WHERE id = ?", [firstUser[0].id])
+        }
+      }
+
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS \`feedbacks\` (
+          \`id\` VARCHAR(36) NOT NULL PRIMARY KEY,
+          \`user_id\` VARCHAR(36) DEFAULT NULL,
+          \`email\` VARCHAR(190) NOT NULL,
+          \`content\` TEXT NOT NULL,
+          \`status\` ENUM('pending', 'read', 'resolved') NOT NULL DEFAULT 'pending',
+          \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          INDEX \`idx_fb_user\` (\`user_id\`),
+          INDEX \`idx_fb_status\` (\`status\`),
+          INDEX \`idx_fb_created\` (\`created_at\` DESC)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `)
+
+      const [catCols] = await pool.query<any[]>('SHOW COLUMNS FROM categories LIKE "user_id"')
+      if (!catCols.length) {
+        await pool.query('ALTER TABLE categories ADD COLUMN `user_id` VARCHAR(36) DEFAULT NULL AFTER `id`, ADD COLUMN `group_id` VARCHAR(36) DEFAULT NULL AFTER `user_id`, ADD INDEX `idx_cat_user` (`user_id`), ADD INDEX `idx_cat_group` (`group_id`)')
+      }
+      await pool.query("UPDATE `categories` SET is_default = 1 WHERE id IN ('c-food', 'c-move', 'c-home', 'c-shop', 'c-health', 'c-fun', 'c-other', 'c-salary', 'c-side')")
+
       const [cols] = await pool.query<any[]>('SHOW COLUMNS FROM activity_logs LIKE "user_id"')
       if (!cols.length) {
         await pool.query('ALTER TABLE activity_logs ADD COLUMN `user_id` VARCHAR(36) DEFAULT NULL AFTER `group_id`, ADD INDEX `idx_act_user` (`user_id`)')

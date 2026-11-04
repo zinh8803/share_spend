@@ -51,11 +51,17 @@ export default defineEventHandler(async (event) => {
 
     case 'saveCategory': {
       const db = await ensureDb()
+      const targetGroupId = p.groupId ? String(p.groupId).trim() : null
       await db.execute(
-        `INSERT INTO categories (id, name, kind, sticker, hint, is_default)
-         VALUES (?, ?, ?, ?, ?, 0)
-         ON DUPLICATE KEY UPDATE name = VALUES(name), kind = VALUES(kind), sticker = VALUES(sticker), hint = VALUES(hint)`,
-        [p.id, p.name, p.kind, p.sticker, p.hint || '']
+        `INSERT INTO categories (id, user_id, group_id, name, kind, sticker, hint, is_default)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+         ON DUPLICATE KEY UPDATE
+           name = VALUES(name),
+           kind = VALUES(kind),
+           sticker = VALUES(sticker),
+           hint = VALUES(hint),
+           group_id = VALUES(group_id)`,
+        [p.id, user.id, targetGroupId, p.name, p.kind, p.sticker, p.hint || '']
       )
       return { ok: true }
     }
@@ -64,7 +70,10 @@ export default defineEventHandler(async (event) => {
       return await withTransaction(async (conn) => {
         await conn.execute('UPDATE transactions SET category_id = ? WHERE category_id = ?', [p.fallback, p.id])
         await conn.execute('UPDATE expenses SET category_id = ? WHERE category_id = ?', [p.fallback, p.id])
-        await conn.execute('DELETE FROM categories WHERE id = ? AND is_default = 0', [p.id])
+        await conn.execute(
+          'DELETE FROM categories WHERE id = ? AND is_default = 0 AND (user_id = ? OR group_id IN (SELECT group_id FROM group_members WHERE user_id = ?))',
+          [p.id, user.id, user.id]
+        )
         return { ok: true }
       })
     }

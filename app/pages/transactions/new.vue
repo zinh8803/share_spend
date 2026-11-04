@@ -19,7 +19,7 @@ const note = ref(existing.value?.note ?? '')
 const error = ref('')
 
 const availableCategories = computed(() =>
-  store.categories.filter(c => c.kind === type.value)
+  store.categories.filter(c => c.kind === type.value && (!c.groupId || c.id === categoryId.value))
 )
 
 watch(existing, (tx) => {

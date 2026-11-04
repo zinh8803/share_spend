@@ -41,7 +41,7 @@ export async function getActiveUser(event: H3Event) {
   if (!uid) return null
   const db = await ensureDb()
   const [rows] = await db.query<any[]>(
-    'SELECT id, name, email, frame, gender, avatar, currency, timezone FROM users WHERE id = ? LIMIT 1',
+    'SELECT id, name, email, role, frame, gender, avatar, currency, timezone FROM users WHERE id = ? LIMIT 1',
     [uid]
   )
   return rows[0] || null
