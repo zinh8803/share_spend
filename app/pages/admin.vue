@@ -68,6 +68,46 @@ const filteredFeedbacks = computed(() => {
   return feedbacks.value.filter(f => f.status === statusFilter.value)
 })
 
+const feedbackPage = ref(1)
+const feedbackPageSize = ref(6)
+
+const totalFeedbackPages = computed(() => Math.max(1, Math.ceil(filteredFeedbacks.value.length / feedbackPageSize.value)))
+
+const paginatedFeedbacks = computed(() => {
+  const start = (feedbackPage.value - 1) * feedbackPageSize.value
+  return filteredFeedbacks.value.slice(start, start + feedbackPageSize.value)
+})
+
+watch([statusFilter, () => feedbacks.value.length], () => {
+  feedbackPage.value = 1
+})
+
+// User Search & Pagination
+const userSearch = ref('')
+const userPage = ref(1)
+const userPageSize = ref(8)
+
+const filteredUsers = computed(() => {
+  const q = userSearch.value.trim().toLowerCase()
+  if (!q) return store.users
+  return store.users.filter(u =>
+    (u.name || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q) ||
+    (u.id || '').toLowerCase().includes(q)
+  )
+})
+
+const totalUserPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / userPageSize.value)))
+
+const paginatedUsers = computed(() => {
+  const start = (userPage.value - 1) * userPageSize.value
+  return filteredUsers.value.slice(start, start + userPageSize.value)
+})
+
+watch(userSearch, () => {
+  userPage.value = 1
+})
+
 const pendingCount = computed(() => feedbacks.value.filter(f => f.status === 'pending').length)
 const readCount = computed(() => feedbacks.value.filter(f => f.status === 'read').length)
 const resolvedCount = computed(() => feedbacks.value.filter(f => f.status === 'resolved').length)
@@ -174,7 +214,10 @@ function formatDate(iso: string) {
 }
 
 useHead({
-  title: 'Trang Quản trị | ShareSpend'
+  title: 'Trang Quản trị | ShareSpend',
+  meta: [
+    { name: 'robots', content: 'noindex, nofollow' }
+  ]
 })
 </script>
 
@@ -320,7 +363,7 @@ useHead({
         <!-- Feedbacks Grid / Cards -->
         <div v-else class="grid grid-cols-1 gap-4">
           <div
-            v-for="item in filteredFeedbacks"
+            v-for="item in paginatedFeedbacks"
             :key="item.id"
             class="panel p-5 sm:p-6 bg-paper flex flex-col justify-between gap-4 transition-all"
           >
@@ -417,24 +460,74 @@ useHead({
               </div>
             </div>
           </div>
+
+          <!-- Feedbacks Pagination -->
+          <div v-if="totalFeedbackPages > 1" class="flex flex-wrap items-center justify-between gap-3 pt-3">
+            <div class="text-xs font-bold text-ink-soft">
+              Trang {{ feedbackPage }} / {{ totalFeedbackPages }} (Tổng {{ filteredFeedbacks.length }} ý kiến)
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                class="btn btn-sm py-1 px-3 text-xs font-bold"
+                :disabled="feedbackPage <= 1"
+                @click="feedbackPage--"
+              >
+                Trang trước
+              </button>
+              <button
+                v-for="p in totalFeedbackPages"
+                :key="p"
+                type="button"
+                class="btn btn-sm py-1 px-2.5 text-xs font-bold transition-all"
+                :class="feedbackPage === p ? 'bg-ink text-white' : 'bg-paper text-ink hover:bg-ground'"
+                @click="feedbackPage = p"
+              >
+                {{ p }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm py-1 px-3 text-xs font-bold"
+                :disabled="feedbackPage >= totalFeedbackPages"
+                @click="feedbackPage++"
+              >
+                Trang sau
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- TAB 2: USERS AND ROLES -->
       <div v-else-if="activeTab === 'users'" class="space-y-4">
         <div class="panel p-6 bg-paper">
-          <div class="border-b-2 border-line pb-4 mb-4">
-            <h2 class="text-lg sm:text-xl font-black text-ink">
-              Danh sách người dùng & phân quyền hệ thống
-            </h2>
-            <p class="text-xs sm:text-sm text-ink-soft mt-1">
-              Quản trị viên có toàn quyền truy cập trang quản trị và xem ý kiến đóng góp. Thành viên chỉ thao tác các tính năng cá nhân và nhóm.
-            </p>
+          <div class="border-b-2 border-line pb-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg sm:text-xl font-black text-ink">
+                Danh sách người dùng & phân quyền hệ thống
+              </h2>
+              <p class="text-xs sm:text-sm text-ink-soft mt-1">
+                Quản trị viên có toàn quyền truy cập trang quản trị và xem ý kiến đóng góp. Thành viên chỉ thao tác các tính năng cá nhân và nhóm.
+              </p>
+            </div>
+            <div class="w-full md:w-72">
+              <input
+                v-model="userSearch"
+                type="text"
+                class="field text-sm py-1.5 px-3"
+                placeholder="Tìm theo tên, email, ID..."
+              />
+            </div>
           </div>
 
-          <div class="divide-y divide-line">
+          <!-- Empty search state -->
+          <div v-if="filteredUsers.length === 0" class="py-8 text-center text-sm text-ink-soft font-medium">
+            Không tìm thấy người dùng nào khớp với "{{ userSearch }}".
+          </div>
+
+          <div v-else class="divide-y divide-line">
             <div
-              v-for="user in store.users"
+              v-for="user in paginatedUsers"
               :key="user.id"
               class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
@@ -478,6 +571,41 @@ useHead({
                   {{ userActionLoading === user.id ? 'Đang cập nhật...' : user.role === 'admin' ? 'Hạ xuống User' : 'Nâng lên Admin' }}
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Users Pagination -->
+          <div v-if="totalUserPages > 1" class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-line mt-4">
+            <div class="text-xs font-bold text-ink-soft">
+              Trang {{ userPage }} / {{ totalUserPages }} (Tổng {{ filteredUsers.length }} người dùng)
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                class="btn btn-sm py-1 px-3 text-xs font-bold"
+                :disabled="userPage <= 1"
+                @click="userPage--"
+              >
+                Trang trước
+              </button>
+              <button
+                v-for="p in totalUserPages"
+                :key="p"
+                type="button"
+                class="btn btn-sm py-1 px-2.5 text-xs font-bold transition-all"
+                :class="userPage === p ? 'bg-ink text-white' : 'bg-paper text-ink hover:bg-ground'"
+                @click="userPage = p"
+              >
+                {{ p }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm py-1 px-3 text-xs font-bold"
+                :disabled="userPage >= totalUserPages"
+                @click="userPage++"
+              >
+                Trang sau
+              </button>
             </div>
           </div>
         </div>

@@ -1,6 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin
+Disallow: /admin/
 
 Sitemap: https://chitieu.blogcuavinh.id.vn/sitemap.xml
 

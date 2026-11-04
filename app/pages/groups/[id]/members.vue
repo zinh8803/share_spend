@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import { useAppStore } from '~/stores/app'
 import { vnd } from '~/utils/money'
 
@@ -14,6 +15,41 @@ const balances = computed(() => store.groupBalances(groupId.value))
 const newName = ref('')
 const newEmail = ref('')
 const feedback = ref('')
+
+// Pagination & Search state
+const searchQuery = ref('')
+const currentPage = ref(1)
+const pageSize = ref(6)
+
+const filteredMembers = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return activeMembers.value
+  return activeMembers.value.filter(m => {
+    const u = store.user(m.userId)
+    const name = (u?.name || '').toLowerCase()
+    const email = (u?.email || '').toLowerCase()
+    return name.includes(q) || email.includes(q)
+  })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredMembers.value.length / pageSize.value)))
+
+const paginatedMembers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredMembers.value.slice(start, start + pageSize.value)
+})
+
+watch([searchQuery, () => activeMembers.value.length], () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = 1
+  }
+})
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
 
 const copiedLink = ref(false)
 async function shareLink() {
@@ -62,8 +98,11 @@ async function removeMember(userId: string) {
 
     <div class="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-7 items-start">
       <div class="panel p-6 flex flex-col gap-4">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <h2 class="text-xl font-extrabold">Thành viên đang tham gia ({{ activeMembers.length }})</h2>
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
+          <div>
+            <h2 class="text-xl font-extrabold text-ink">Thành viên đang tham gia ({{ activeMembers.length }})</h2>
+            <p class="text-xs text-ink-soft mt-0.5">Danh sách toàn bộ thành viên đang hoạt động trong nhóm.</p>
+          </div>
           <div class="flex items-center gap-2">
             <span class="chip bg-butter">Mã mời: {{ group.inviteCode }}</span>
             <button
@@ -77,11 +116,32 @@ async function removeMember(userId: string) {
           </div>
         </div>
 
+        <!-- Search & Info Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div class="w-full sm:w-72">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="field text-sm py-1.5 px-3"
+              placeholder="Tìm theo tên hoặc email thành viên..."
+            />
+          </div>
+          <div class="text-xs font-semibold text-ink-soft">
+            Hiển thị {{ filteredMembers.length ? (currentPage - 1) * pageSize + 1 : 0 }} - {{ Math.min(currentPage * pageSize, filteredMembers.length) }} trong tổng {{ filteredMembers.length }}
+          </div>
+        </div>
+
         <p v-if="feedback" role="alert" class="field-error">{{ feedback }}</p>
 
-        <div class="flex flex-col">
+        <!-- Empty search state -->
+        <div v-if="filteredMembers.length === 0" class="py-8 text-center text-sm text-ink-soft font-medium">
+          Không tìm thấy thành viên nào khớp với từ khóa "{{ searchQuery }}".
+        </div>
+
+        <!-- Members list -->
+        <div v-else class="flex flex-col">
           <div
-            v-for="m in activeMembers"
+            v-for="m in paginatedMembers"
             :key="m.userId"
             class="row-line flex flex-wrap items-center justify-between gap-3 py-3.5"
           >
@@ -97,6 +157,9 @@ async function removeMember(userId: string) {
                   <span class="font-extrabold text-base">{{ store.user(m.userId)?.name }}</span>
                   <span class="chip" :class="m.role === 'owner' ? 'bg-butter' : 'bg-ground'">
                     {{ m.role === 'owner' ? 'Owner (Chủ nhóm)' : 'Member' }}
+                  </span>
+                  <span v-if="m.userId === store.me.id" class="chip bg-lilac text-[10px] py-0 px-1.5 font-bold">
+                    Bạn
                   </span>
                 </div>
                 <div class="text-xs text-ink-soft mt-0.5">
@@ -126,6 +189,44 @@ async function removeMember(userId: string) {
           </div>
         </div>
 
+        <!-- Pagination Controls -->
+        <div v-if="totalPages > 1" class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-line">
+          <div class="text-xs font-bold text-ink-soft">
+            Trang {{ currentPage }} / {{ totalPages }}
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button
+              type="button"
+              class="btn btn-sm py-1 px-3 text-xs font-bold"
+              :disabled="currentPage <= 1"
+              @click="goToPage(currentPage - 1)"
+            >
+              Trang trước
+            </button>
+
+            <button
+              v-for="page in totalPages"
+              :key="page"
+              type="button"
+              class="btn btn-sm py-1 px-2.5 text-xs font-bold transition-all"
+              :class="currentPage === page ? 'bg-ink text-white' : 'bg-paper text-ink hover:bg-ground'"
+              @click="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-sm py-1 px-3 text-xs font-bold"
+              :disabled="currentPage >= totalPages"
+              @click="goToPage(currentPage + 1)"
+            >
+              Trang sau
+            </button>
+          </div>
+        </div>
+
+        <!-- Left members section -->
         <div v-if="leftMembers.length" class="pt-4 border-t-2 border-dashed border-line">
           <h3 class="text-sm font-extrabold text-ink-soft mb-2">
             Đã rời nhóm (lịch sử giao dịch và công nợ cũ vẫn được bảo toàn)
@@ -137,6 +238,7 @@ async function removeMember(userId: string) {
         </div>
       </div>
 
+      <!-- Add member form -->
       <form
         v-if="group.status === 'active'"
         class="panel p-6 flex flex-col gap-4"
@@ -178,4 +280,3 @@ async function removeMember(userId: string) {
     </div>
   </div>
 </template>
-
