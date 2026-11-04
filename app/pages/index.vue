@@ -86,10 +86,10 @@ const recentTransactions = computed(() =>
 <template>
   <div class="flex flex-col gap-10">
     <!-- First Viewport: Photobooth 4 Khung Composition -->
-    <section v-if="store.myGroups.length" aria-labelledby="groups-overview-heading" class="grid grid-cols-1 xl:grid-cols-[auto_minmax(480px,1fr)] gap-7 items-start">
-      <div class="flex gap-4 overflow-x-auto pb-3 pt-2 px-2">
+    <section v-if="store.myGroups.length" aria-labelledby="groups-overview-heading" class="grid grid-cols-1 lg:grid-cols-[1fr_440px] xl:grid-cols-[1fr_480px] gap-8 items-start">
+      <div class="flex flex-wrap gap-6 pt-2 pb-4">
         <PhotoStrip
-          v-for="(item, idx) in groupStrips"
+          v-for="item in groupStrips"
           :key="item.group.id"
           :slots="item.slots"
           :caption="item.caption"
@@ -97,12 +97,11 @@ const recentTransactions = computed(() =>
           :tilt="item.tilt"
           :selected="selectedGroup?.id === item.group.id"
           :archived="item.group.status === 'archived'"
-          :class="idx === 1 ? 'mt-5' : idx === 2 ? 'mt-2' : ''"
           @select="selectedGroupId = item.group.id"
         />
       </div>
 
-      <div v-if="selectedGroup" class="panel p-6 sm:p-8 flex flex-col gap-5 min-w-0">
+      <div v-if="selectedGroup" class="panel p-6 sm:p-8 flex flex-col gap-5 min-w-0 lg:sticky lg:top-24">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div class="min-w-0">
             <h1 id="groups-overview-heading" class="text-2xl sm:text-3xl font-extrabold">
