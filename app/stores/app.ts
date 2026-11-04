@@ -45,7 +45,7 @@ export interface Member { groupId: string; userId: string; role: Role; status: '
 export interface Split { userId: string; share: number; value: number }
 export interface Expense { id: string; groupId: string; title: string; total: number; categoryId: string; date: string; payerId: string; splitType: SplitType; splits: Split[]; note: string; status: 'active' | 'deleted'; createdBy: string; createdAt: string; updatedAt: string }
 export interface Settlement { id: string; groupId: string; fromId: string; toId: string; amount: number; date: string; status: 'pending' | 'confirmed' | 'cancelled'; note: string }
-export interface Activity { id: string; groupId?: string; text: string; at: string }
+export interface Activity { id: string; groupId?: string; userId?: string; text: string; at: string }
 
 export type DebtStatus = 'pending' | 'partial' | 'paid'
 export interface Debt { groupId: string; fromId: string; toId: string; gross: number; paid: number; remaining: number; pendingAmount: number; status: DebtStatus }
@@ -254,7 +254,7 @@ export const useAppStore = defineStore('app', {
       for (const g of this.groups) for (const d of this.groupDebts(g.id)) this.markDebtSeen(d)
     },
     async log(text: string, groupId?: string) {
-      const item = { id: uid('a'), groupId, text, at: nowIso() }
+      const item: Activity = { id: uid('a'), groupId, userId: this.meId, text, at: nowIso() }
       this.activity.unshift(item)
       await this.callApi('log', item).catch(() => {})
     },

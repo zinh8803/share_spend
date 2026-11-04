@@ -153,10 +153,17 @@ export default defineEventHandler(async (event) => {
         )
 
         const logId = 'a-' + Math.random().toString(36).slice(2, 10)
-        await conn.execute(
-          'INSERT INTO activity_logs (id, group_id, text, created_at) VALUES (?, ?, ?, NOW())',
-          [logId, g.id, `${user.name} tham gia nhóm qua mã mời`]
-        ).catch(() => {})
+        try {
+          await conn.execute(
+            'INSERT INTO activity_logs (id, group_id, user_id, text, created_at) VALUES (?, ?, ?, ?, NOW())',
+            [logId, g.id, user.id, `${user.name} tham gia nhóm qua mã mời`]
+          )
+        } catch (_) {
+          await conn.execute(
+            'INSERT INTO activity_logs (id, group_id, text, created_at) VALUES (?, ?, ?, NOW())',
+            [logId, g.id, `${user.name} tham gia nhóm qua mã mời`]
+          ).catch(() => {})
+        }
 
         return { ok: true, groupId: g.id, groupName: g.name }
       })
@@ -262,10 +269,17 @@ export default defineEventHandler(async (event) => {
 
     case 'log': {
       const db = await ensureDb()
-      await db.execute(
-        'INSERT INTO activity_logs (id, group_id, text) VALUES (?, ?, ?)',
-        [p.id, p.groupId || null, p.text]
-      )
+      try {
+        await db.execute(
+          'INSERT INTO activity_logs (id, group_id, user_id, text) VALUES (?, ?, ?, ?)',
+          [p.id, p.groupId || null, user.id, p.text]
+        )
+      } catch (_) {
+        await db.execute(
+          'INSERT INTO activity_logs (id, group_id, text) VALUES (?, ?, ?)',
+          [p.id, p.groupId || null, p.text]
+        )
+      }
       return { ok: true }
     }
 

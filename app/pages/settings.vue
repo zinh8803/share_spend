@@ -16,6 +16,16 @@ const currentPresets = computed(() =>
   AVATAR_PRESETS.filter(p => p.gender === gender.value)
 )
 
+const myActivities = computed(() => {
+  const myGroupIds = new Set(store.myGroups.map(g => g.id))
+  return store.activity.filter(a => {
+    if (a.groupId && myGroupIds.has(a.groupId)) return true
+    if (a.userId && a.userId === store.meId) return true
+    if (!a.groupId && (!a.userId || a.userId === store.meId)) return true
+    return false
+  })
+})
+
 function setGender(g: Gender) {
   gender.value = g
   const list = AVATAR_PRESETS.filter(p => p.gender === g)
@@ -189,13 +199,32 @@ function handleLogout() {
       <!-- Right Column: Only Activity History -->
       <div class="flex flex-col gap-6">
         <div class="panel p-6 flex flex-col gap-3">
-          <h2 class="text-xl font-extrabold">Lịch sử hoạt động</h2>
-          <ul class="flex flex-col gap-2.5 text-sm">
-            <li v-for="act in store.activity.slice(0, 10)" :key="act.id" class="row-line pt-2.5 flex justify-between gap-3">
-              <span>{{ act.text }}</span>
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-extrabold">Lịch sử hoạt động</h2>
+            <span class="text-xs text-ink-soft font-semibold">Của bạn & nhóm</span>
+          </div>
+          <p class="text-xs text-ink-soft">
+            Chỉ hiển thị các hoạt động của bạn hoặc các nhóm bạn đang tham gia.
+          </p>
+
+          <ul v-if="myActivities.length" class="flex flex-col gap-2.5 text-sm">
+            <li
+              v-for="act in myActivities.slice(0, 15)"
+              :key="act.id"
+              class="row-line pt-2.5 flex justify-between gap-3"
+            >
+              <div class="flex flex-col min-w-0">
+                <span class="leading-snug break-words">{{ act.text }}</span>
+                <span v-if="act.groupId && store.group(act.groupId)" class="text-xs text-ink-soft font-semibold mt-0.5">
+                  Nhóm: {{ store.group(act.groupId)?.name }}
+                </span>
+              </div>
               <span class="text-xs text-ink-soft num shrink-0">{{ act.at.slice(0, 10) }}</span>
             </li>
           </ul>
+          <p v-else class="hand text-lg text-ink-soft py-3">
+            Chưa có hoạt động nào trong nhóm hoặc tài khoản của bạn.
+          </p>
         </div>
       </div>
     </div>

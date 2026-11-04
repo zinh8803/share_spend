@@ -25,6 +25,51 @@ try {
   const conn = await mysql.createConnection(config)
   const sql = fs.readFileSync(path.resolve('database/schema.sql'), 'utf8')
   await conn.query(sql)
+
+  const dbName = process.env.MYSQL_DATABASE || 'sharespend'
+  await conn.query(`USE \`${dbName}\`;`)
+
+  // Tự động bổ sung cột user_id vào bảng activity_logs nếu chưa có
+  try {
+    const [cols] = await conn.query('SHOW COLUMNS FROM `activity_logs` LIKE "user_id"')
+    if (!cols.length) {
+      await conn.query('ALTER TABLE `activity_logs` ADD COLUMN `user_id` VARCHAR(36) DEFAULT NULL AFTER `group_id`, ADD INDEX `idx_act_user` (`user_id`)')
+      console.log('✔ Đã tự động thêm cột user_id vào bảng activity_logs thành công.')
+    } else {
+      console.log('✔ Bảng activity_logs đã có cột user_id.')
+    }
+
+    // Cập nhật hồi tố user_id cho các hoạt động cũ trước đó (Backfill)
+    const [unassigned] = await conn.query('SELECT COUNT(*) AS total FROM `activity_logs` WHERE user_id IS NULL')
+    const nullCount = unassigned[0]?.total || 0
+    if (nullCount > 0) {
+      console.log(`Đang tìm và gán user_id cho ${nullCount} hoạt động cũ trong lịch sử...`)
+
+      // Bước 1: Khớp theo tên user ở đầu câu hoặc trong câu
+      const [users] = await conn.query('SELECT id, name FROM `users` ORDER BY CHAR_LENGTH(name) DESC')
+      for (const u of users) {
+        if (!u.name) continue
+        await conn.execute(
+          'UPDATE `activity_logs` SET user_id = ? WHERE user_id IS NULL AND (text LIKE ? OR text LIKE ?)',
+          [u.id, `${u.name} %`, `% ${u.name} %`]
+        )
+      }
+
+      // Bước 2: Với các hoạt động nhóm còn lại, gán cho chủ nhóm (người tạo nhóm)
+      await conn.query(`
+        UPDATE \`activity_logs\` a
+        JOIN \`groups\` g ON a.group_id = g.id
+        SET a.user_id = g.created_by
+        WHERE a.user_id IS NULL
+      `)
+
+      const [rem] = await conn.query('SELECT COUNT(*) AS total FROM `activity_logs` WHERE user_id IS NULL')
+      const remainingCount = rem[0]?.total || 0
+      console.log(`✔ Đã cập nhật xong! Các hoạt động cũ đã được gán user_id tương ứng (chưa rõ chủ thể: ${remainingCount}).`)
+    }
+  } catch (err) {
+    console.error('Lỗi khi kiểm tra / cập nhật user_id:', err.message)
+  }
   if (process.argv.includes('--reset')) {
     await conn.query(`
       USE sharespend;
@@ -35,7 +80,7 @@ try {
       DELETE FROM expenses;
       DELETE FROM invitations;
       DELETE FROM group_members;
-      DELETE FROM `groups`;
+      DELETE FROM \`groups\`;
       DELETE FROM transactions;
       DELETE FROM users;
     `)

@@ -4,6 +4,7 @@ import mysql, { type Pool, type PoolConnection } from 'mysql2/promise'
 
 let pool: Pool | null = null
 let schemaReady = false
+let activityMigrated = false
 
 function getMysqlConfig() {
   const rc = useRuntimeConfig()
@@ -48,6 +49,36 @@ export async function ensureDb(): Promise<Pool> {
       connectionLimit: 10,
       dateStrings: true
     })
+  }
+
+  // Auto-migrate user_id column into activity_logs if missing & backfill old logs
+  if (!activityMigrated && pool) {
+    try {
+      const [cols] = await pool.query<any[]>('SHOW COLUMNS FROM activity_logs LIKE "user_id"')
+      if (!cols.length) {
+        await pool.query('ALTER TABLE activity_logs ADD COLUMN `user_id` VARCHAR(36) DEFAULT NULL AFTER `group_id`, ADD INDEX `idx_act_user` (`user_id`)')
+      }
+
+      // Backfill user_id for existing records where user_id is NULL
+      const [users] = await pool.query<any[]>('SELECT id, name FROM users ORDER BY CHAR_LENGTH(name) DESC')
+      for (const u of users) {
+        if (!u.name) continue
+        await pool.execute(
+          'UPDATE activity_logs SET user_id = ? WHERE user_id IS NULL AND (text LIKE ? OR text LIKE ?)',
+          [u.id, `${u.name} %`, `% ${u.name} %`]
+        )
+      }
+
+      // Fallback: assign remaining group activities to the group creator
+      await pool.query(`
+        UPDATE activity_logs a
+        JOIN \`groups\` g ON a.group_id = g.id
+        SET a.user_id = g.created_by
+        WHERE a.user_id IS NULL
+      `)
+
+      activityMigrated = true
+    } catch (_) {}
   }
   return pool
 }

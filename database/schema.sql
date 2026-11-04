@@ -151,7 +151,10 @@ CREATE TABLE IF NOT EXISTS `notifications` (
 CREATE TABLE IF NOT EXISTS `activity_logs` (
   `id` VARCHAR(36) NOT NULL PRIMARY KEY,
   `group_id` VARCHAR(36) DEFAULT NULL,
+  `user_id` VARCHAR(36) DEFAULT NULL,
   `text` VARCHAR(500) NOT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_act_group` (`group_id`),
+  INDEX `idx_act_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

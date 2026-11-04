@@ -56,9 +56,35 @@ export default defineEventHandler(async (event) => {
     const [settlements] = await db.query<any[]>(
       'SELECT id, group_id AS groupId, from_user_id AS fromId, to_user_id AS toId, amount, paid_at AS date, status, note FROM settlements ORDER BY paid_at DESC'
     )
-    const [activity] = await db.query<any[]>(
-      'SELECT id, group_id AS groupId, text, created_at AS at FROM activity_logs ORDER BY created_at DESC LIMIT 30'
-    )
+    let activity: any[] = []
+    try {
+      const [rows] = await db.query<any[]>(
+        `SELECT id, group_id AS groupId, user_id AS userId, text, created_at AS at
+         FROM activity_logs
+         WHERE (
+           group_id IS NOT NULL AND group_id IN (
+             SELECT group_id FROM group_members WHERE user_id = ? AND status = 'active'
+           )
+         )
+         OR user_id = ?
+         ORDER BY created_at DESC
+         LIMIT 50`,
+        [currentUser.id, currentUser.id]
+      )
+      activity = rows
+    } catch (_) {
+      const [rows] = await db.query<any[]>(
+        `SELECT id, group_id AS groupId, text, created_at AS at
+         FROM activity_logs
+         WHERE group_id IS NOT NULL AND group_id IN (
+           SELECT group_id FROM group_members WHERE user_id = ? AND status = 'active'
+         )
+         ORDER BY created_at DESC
+         LIMIT 50`,
+        [currentUser.id]
+      )
+      activity = rows
+    }
 
     const payersByExpense = new Map<string, string>()
     for (const p of payerRows) {

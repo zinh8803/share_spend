@@ -48,6 +48,16 @@ const groupStrips = computed(() =>
 const selectedGroupDebts = computed(() =>
   selectedGroup.value ? store.groupDebts(selectedGroup.value.id) : []
 )
+
+const myActivities = computed(() => {
+  const myGroupIds = new Set(store.myGroups.map(g => g.id))
+  return store.activity.filter(a => {
+    if (a.groupId) return myGroupIds.has(a.groupId)
+    if (a.userId) return a.userId === store.meId
+    if (!a.groupId && (!a.userId || a.userId === store.meId)) return true
+    return false
+  })
+})
 const selectedGroupExpenses = computed(() =>
   selectedGroup.value ? store.groupExpenses(selectedGroup.value.id) : []
 )
@@ -347,12 +357,13 @@ const recentTransactions = computed(() =>
 
         <div class="pt-2 border-t-2 border-dashed border-line">
           <h3 class="text-base font-extrabold mb-2">Hoạt động mới</h3>
-          <ul class="flex flex-col gap-2 text-sm">
-            <li v-for="act in store.activity.slice(0, 4)" :key="act.id" class="flex items-baseline justify-between gap-3">
-              <span>{{ act.text }}</span>
+          <ul v-if="myActivities.length" class="flex flex-col gap-2 text-sm">
+            <li v-for="act in myActivities.slice(0, 4)" :key="act.id" class="flex items-baseline justify-between gap-3">
+              <span class="truncate">{{ act.text }}</span>
               <span class="text-xs text-ink-soft shrink-0 num">{{ act.at.slice(0, 10) }}</span>
             </li>
           </ul>
+          <p v-else class="hand text-lg text-ink-soft">Chưa có hoạt động nào trong các nhóm của bạn.</p>
         </div>
       </div>
     </section>
