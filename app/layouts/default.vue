@@ -4,6 +4,7 @@ import { useAppStore } from '~/stores/app'
 const store = useAppStore()
 const route = useRoute()
 const router = useRouter()
+const { lang, setLang, t } = useI18n()
 
 const publicPaths = ['/login', '/privacy', '/terms', '/join']
 function isPublic(path: string) {
@@ -17,8 +18,8 @@ onMounted(async () => {
   }
 })
 
-watch(() => [store.hydrated, store.loggedIn, route.path], ([ready, logged, path]) => {
-  if (ready && !logged && !isPublic(path as string)) {
+watch([() => store.hydrated, () => store.loggedIn], ([ready, logged]) => {
+  if (ready && !logged && !isPublic(route.path)) {
     router.replace('/login')
   }
 })
@@ -27,15 +28,15 @@ const showFeedbackModal = ref(false)
 
 const navItems = computed(() => {
   const items = [
-    { to: '/', label: 'Tổng quan', exact: true },
-    { to: '/transactions', label: 'Giao dịch' },
-    { to: '/groups', label: 'Nhóm' },
-    { to: '/reports', label: 'Báo cáo' },
-    { to: '/categories', label: 'Danh mục' },
-    { to: '/settings', label: 'Cài đặt' }
+    { to: '/', label: t('nav.overview'), exact: true },
+    { to: '/transactions', label: t('nav.transactions') },
+    { to: '/groups', label: t('nav.groups') },
+    { to: '/reports', label: t('nav.reports') },
+    { to: '/categories', label: t('nav.categories') },
+    { to: '/settings', label: t('nav.settings') }
   ]
   if (store.me?.role === 'admin') {
-    items.push({ to: '/admin', label: 'Quản trị' })
+    items.push({ to: '/admin', label: t('nav.admin') })
   }
   return items
 })
@@ -73,13 +74,35 @@ function isActive(item: { to: string; exact?: boolean }) {
       </nav>
 
       <div class="ml-auto flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <!-- Language Switcher -->
+        <div class="seg text-xs" role="group" aria-label="Ngôn ngữ / Language">
+          <button
+            type="button"
+            class="px-2.5 py-1 font-bold text-xs"
+            :aria-pressed="lang === 'vi'"
+            @click="setLang('vi')"
+            title="Tiếng Việt"
+          >
+            VI
+          </button>
+          <button
+            type="button"
+            class="px-2.5 py-1 font-bold text-xs"
+            :aria-pressed="lang === 'en'"
+            @click="setLang('en')"
+            title="English"
+          >
+            EN
+          </button>
+        </div>
+
         <button
           type="button"
           @click="showFeedbackModal = true"
           class="btn btn-sm bg-blush hover:bg-pink text-ink font-semibold"
-          title="Đóng góp ý kiến"
+          :title="t('header.feedback')"
         >
-          Đóng góp ý kiến
+          {{ t('header.feedback') }}
         </button>
 
         <template v-if="store.loggedIn">
@@ -87,24 +110,24 @@ function isActive(item: { to: string; exact?: boolean }) {
             to="/transactions/new"
             class="hidden md:inline-flex btn btn-sm bg-butter"
           >
-            Thêm thu chi
+            {{ t('header.addTx') }}
           </NuxtLink>
           <NuxtLink
             :to="defaultCreateExpenseLink"
             class="btn btn-sm sm:px-5 sm:py-2.5 btn-ink"
           >
-            Tạo khoản chi
+            {{ t('header.splitBill') }}
           </NuxtLink>
           <NuxtLink
             to="/settings"
             class="hidden sm:inline-flex items-center gap-2 pl-1"
-            :aria-label="`Tài khoản ${store.me.name}`"
+            :aria-label="`${t('header.account')} ${store.me.name}`"
           >
             <PhotoAvatar :avatar="store.me.avatar" :seed="store.me.name" :bg="store.me.frame" :size="40" :label="store.me.name" />
           </NuxtLink>
         </template>
         <NuxtLink v-else to="/login" class="btn btn-sm btn-ink">
-          Đăng nhập / Đăng ký
+          {{ t('header.loginRegister') }}
         </NuxtLink>
       </div>
     </header>
@@ -119,18 +142,18 @@ function isActive(item: { to: string; exact?: boolean }) {
       <div class="flex flex-wrap items-center gap-2.5">
         <BrandLogo :size="22" />
         <span class="font-extrabold text-ink">ShareSpend</span>
-        <span>· Sổ thu chi cá nhân & chia tiền nhóm</span>
+        <span>· {{ t('footer.tagline') }}</span>
         <span class="text-line">|</span>
         <NuxtLink to="/terms" class="hover:underline hover:text-ink font-semibold transition-colors">
-          Chính sách sử dụng
+          {{ t('footer.terms') }}
         </NuxtLink>
         <span class="text-line">·</span>
         <NuxtLink to="/privacy" class="hover:underline hover:text-ink font-semibold transition-colors">
-          Quyền riêng tư
+          {{ t('footer.privacy') }}
         </NuxtLink>
       </div>
       <div v-if="store.loggedIn" class="flex items-center gap-4">
-        <span>Đang đăng nhập: <strong>{{ store.me.name }}</strong> ({{ store.me.email }})</span>
+        <span>{{ t('footer.loggedInAs') }} <strong>{{ store.me.name }}</strong> ({{ store.me.email }})</span>
       </div>
     </footer>
   </div>

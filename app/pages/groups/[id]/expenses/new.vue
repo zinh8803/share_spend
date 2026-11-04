@@ -5,6 +5,7 @@ import { computeSplit, parseVnd, vnd, vndShort, type SplitType } from '~/utils/m
 const route = useRoute()
 const router = useRouter()
 const store = useAppStore()
+const { t, tCategoryName, tSplitType } = useI18n()
 
 const groupId = computed(() => String(route.params.id))
 const group = computed(() => store.group(groupId.value))
@@ -168,32 +169,33 @@ async function submit() {
 </script>
 
 <template>
-  <div v-if="group">
+  <div class="group-page">
+    <div v-if="group">
     <GroupHeader :group-id="groupId" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[1.45fr_auto] gap-8 items-start">
       <form class="panel p-6 sm:p-8 flex flex-col gap-5" @submit.prevent="submit">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-2xl font-extrabold">
-            {{ editId ? 'Chỉnh sửa khoản chi & tính lại công nợ' : 'Tạo khoản chi chung & chia tiền' }}
+            {{ editId ? t('groups.editExpenseTitle') : t('groups.newExpenseTitle') }}
           </h2>
-          <span class="chip bg-butter">Tổng phần chịu = Tổng hóa đơn</span>
+          <span class="chip bg-butter">100% = {{ vnd(totalAmount) }}</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="e-title" class="field-label">Tên khoản chi</label>
+            <label for="e-title" class="field-label">{{ t('tx.thDescription') }}</label>
             <input
               id="e-title"
               v-model="title"
               type="text"
               class="field"
-              placeholder="Ví dụ: Ăn tối lẩu gà lá é"
+              :placeholder="t('groups.newExpenseDefault')"
             />
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label for="e-total" class="field-label mb-0">Tổng hóa đơn (VND)</label>
+              <label for="e-total" class="field-label mb-0">{{ t('groups.billTotal') }} (VND)</label>
               <span v-if="totalAmount > 0" class="text-xs font-semibold text-ink-soft">
                 {{ vnd(totalAmount) }}
               </span>
@@ -215,7 +217,7 @@ async function submit() {
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label for="e-payer" class="field-label">Người đã thanh toán</label>
+            <label for="e-payer" class="field-label">{{ t('groups.billPayer') }}</label>
             <select id="e-payer" v-model="payerId" class="field font-bold">
               <option v-for="m in members" :key="m.userId" :value="m.userId">
                 {{ store.user(m.userId)?.name }}
@@ -224,47 +226,47 @@ async function submit() {
           </div>
 
           <div>
-            <label for="e-cat" class="field-label">Danh mục</label>
+            <label for="e-cat" class="field-label">{{ t('tx.category') }}</label>
             <select id="e-cat" v-model="categoryId" class="field">
               <option v-for="c in expenseCategories" :key="c.id" :value="c.id">
-                {{ c.name }}{{ c.groupId ? ' (Nhóm)' : !c.isDefault ? ' (Cá nhân)' : '' }}
+                {{ tCategoryName(c) }}{{ c.groupId ? ' (' + t('common.group') + ')' : !c.isDefault ? ' (' + t('common.personal') + ')' : '' }}
               </option>
             </select>
           </div>
 
           <div>
-            <label for="e-date" class="field-label">Ngày chi</label>
+            <label for="e-date" class="field-label">{{ t('common.date') }}</label>
             <input id="e-date" v-model="date" type="date" class="field num" />
           </div>
         </div>
 
         <div>
-          <label class="field-label">Phương thức chia tiền (4 cách)</label>
-          <div class="seg" role="group" aria-label="Phương thức chia tiền">
+          <label class="field-label">{{ t('reports.byCategory') }}</label>
+          <div class="seg" role="group" :aria-label="t('reports.byCategory')">
             <button type="button" :aria-pressed="splitType === 'equal'" @click="splitType = 'equal'">
-              Chia đều (Equal)
+              {{ tSplitType('equal') }}
             </button>
             <button type="button" :aria-pressed="splitType === 'exact'" @click="splitType = 'exact'">
-              Số tiền tùy chỉnh (Exact)
+              {{ tSplitType('exact') }}
             </button>
             <button type="button" :aria-pressed="splitType === 'percent'" @click="splitType = 'percent'">
-              Theo tỷ lệ % (Percent)
+              {{ tSplitType('percent') }}
             </button>
             <button type="button" :aria-pressed="splitType === 'shares'" @click="splitType = 'shares'">
-              Theo trọng số (Shares)
+              {{ tSplitType('shares') }}
             </button>
           </div>
         </div>
 
         <div>
           <div class="flex items-center justify-between mb-2">
-            <label class="field-label mb-0">Thành viên tham gia chịu chi phí ({{ selectedIds.length }}/{{ members.length }})</label>
+            <label class="field-label mb-0">{{ t('groups.participatingMembers', { selected: selectedIds.length, total: members.length }) }}</label>
             <button
               type="button"
               class="text-xs font-semibold underline cursor-pointer"
               @click="selectedIds = members.map(m => m.userId)"
             >
-              Chọn tất cả
+              {{ t('groups.selectAll') }}
             </button>
           </div>
 
@@ -289,10 +291,10 @@ async function submit() {
                 <div>
                   <div class="font-bold text-sm">
                     {{ store.user(m.userId)?.name }}
-                    <span v-if="m.userId === payerId" class="chip bg-butter ml-1 text-[11px]">Người trả</span>
+                    <span v-if="m.userId === payerId" class="chip bg-butter ml-1 text-[11px]">{{ t('groups.payerBadge') }}</span>
                   </div>
                   <div class="text-xs text-ink-soft">
-                    {{ selectedIds.includes(m.userId) ? `Phần chịu: ${vnd(splitResult.shares[m.userId] || 0)}` : 'Không tham gia khoản này' }}
+                    {{ selectedIds.includes(m.userId) ? t('groups.shareAmount', { amount: vnd(splitResult.shares[m.userId] || 0) }) : t('groups.notParticipating') }}
                   </div>
                 </div>
               </label>
@@ -310,7 +312,7 @@ async function submit() {
                     step="1000"
                     min="0"
                     class="field w-36 text-right font-bold num py-1.5"
-                    :aria-label="`Số tiền của ${store.user(m.userId)?.name}`"
+                    :aria-label="`Amount of ${store.user(m.userId)?.name}`"
                   />
                   <span class="text-xs font-bold">đ</span>
                 </template>
@@ -321,7 +323,7 @@ async function submit() {
                     min="0"
                     max="100"
                     class="field w-24 text-right font-bold num py-1.5"
-                    :aria-label="`Phần trăm của ${store.user(m.userId)?.name}`"
+                    :aria-label="`Percent of ${store.user(m.userId)?.name}`"
                   />
                   <span class="text-xs font-bold">% ({{ vnd(splitResult.shares[m.userId] || 0) }})</span>
                 </template>
@@ -332,7 +334,7 @@ async function submit() {
                     min="0"
                     step="1"
                     class="field w-20 text-right font-bold num py-1.5"
-                    :aria-label="`Số phần của ${store.user(m.userId)?.name}`"
+                    :aria-label="`Shares of ${store.user(m.userId)?.name}`"
                   />
                   <span class="text-xs font-bold">phần ({{ vnd(splitResult.shares[m.userId] || 0) }})</span>
                 </template>
@@ -347,8 +349,7 @@ async function submit() {
         >
           <div class="text-sm font-semibold">
             <template v-if="splitResult.ok">
-              Tổng phân bổ khớp 100%: <strong>{{ vnd(totalAmount) }}</strong>.
-              {{ store.user(payerId)?.name }} cần nhận lại <strong class="gain">{{ vnd(payerReceivable) }}</strong>.
+              {{ t('groups.splitMatched', { total: vnd(totalAmount), payer: store.user(payerId)?.name, receivable: vnd(payerReceivable) }) }}
             </template>
             <template v-else>
               {{ splitResult.error }}
@@ -357,33 +358,31 @@ async function submit() {
         </div>
 
         <div>
-          <label for="e-note" class="field-label">Ghi chú hóa đơn (tùy chọn)</label>
-          <input id="e-note" v-model="note" type="text" class="field" placeholder="Quán ăn, ghi chú chia lẻ..." />
+          <label for="e-note" class="field-label">{{ t('common.note') }}</label>
+          <input id="e-note" v-model="note" type="text" class="field" :placeholder="t('feedback.contentPlaceholder')" />
         </div>
 
         <p v-if="formError" role="alert" class="field-error">{{ formError }}</p>
 
         <div class="flex flex-wrap items-center gap-3">
           <button type="submit" class="btn btn-ink" :disabled="!splitResult.ok">
-            {{ editId ? 'Cập nhật khoản chi' : 'Xác nhận & tính công nợ' }}
+            {{ editId ? t('groups.updateExpenseBtn') : t('groups.confirmExpenseBtn') }}
           </button>
-          <NuxtLink :to="`/groups/${groupId}/expenses`" class="btn">Hủy</NuxtLink>
+          <NuxtLink :to="`/groups/${groupId}/expenses`" class="btn">{{ t('common.cancel') }}</NuxtLink>
         </div>
       </form>
 
       <div class="flex flex-col items-center gap-3">
-        <div class="text-xs font-extrabold uppercase tracking-wider text-ink-soft">
-          Dải ảnh phân bổ trực tiếp
-        </div>
         <PhotoStrip
           :slots="previewSlots"
-          :caption="title || 'Khoản chi mới'"
-          :subcaption="`${store.user(payerId)?.name} trả ${vndShort(totalAmount)}`"
+          :caption="title || t('groups.newExpenseDefault')"
+          :subcaption="`${store.user(payerId)?.name} ${t('groups.paidAmount', { amount: vndShort(totalAmount) })}`"
           :tilt="1.2"
           selected
         />
       </div>
     </div>
+  </div>
   </div>
 </template>
 

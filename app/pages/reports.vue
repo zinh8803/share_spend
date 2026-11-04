@@ -10,6 +10,7 @@ import { vnd } from '~/utils/money'
 use([CanvasRenderer, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent])
 
 const store = useAppStore()
+const { t, tCategoryName } = useI18n()
 const mode = ref<'personal' | 'group'>('personal')
 const currentYm = todayIso().slice(0, 7)
 const month = ref(currentYm)
@@ -53,7 +54,7 @@ const categoryBreakdown = computed(() => {
   return [...map.entries()]
     .map(([id, value]) => ({
       id,
-      name: store.category(id)?.name || 'Khác',
+      name: tCategoryName(store.category(id) || id) || t('tx.other'),
       sticker: store.category(id)?.sticker || 'khac',
       value
     }))
@@ -70,7 +71,7 @@ const personalPieOption = computed(() => ({
   color: ['#C9B6FF', '#A8D8FF', '#FFD6E2', '#FFF1A8', '#FF8FB1', '#7A5CFF'],
   series: [
     {
-      name: 'Chi tiêu theo danh mục',
+      name: t('reports.byCategory'),
       type: 'pie',
       radius: ['42%', '74%'],
       itemStyle: { borderColor: '#222222', borderWidth: 2, borderRadius: 6 },
@@ -82,7 +83,7 @@ const personalPieOption = computed(() => ({
 
 const monthlyCompareOption = computed(() => {
   const months = [...monthOptions.value].reverse()
-  const labels = months.map(m => `Tháng ${m.slice(5, 7)}/${m.slice(0, 4)}`)
+  const labels = months.map(m => t('dashboard.monthFormat', { m: m.slice(5, 7), y: m.slice(0, 4) }))
   const incomes = months.map(m => store.monthTotals(m).income)
   const personalEx = months.map(m => store.monthTotals(m).expense)
   const groupShare = months.map(m => store.myGroupShare(m))
@@ -106,20 +107,20 @@ const monthlyCompareOption = computed(() => {
     },
     series: [
       {
-        name: 'Thu nhập',
+        name: t('reports.totalIncome'),
         type: 'bar',
         data: incomes,
         itemStyle: { color: '#D4F5E3', borderColor: '#222222', borderWidth: 2, borderRadius: [6, 6, 0, 0] }
       },
       {
-        name: 'Chi cá nhân',
+        name: t('reports.personalSpend'),
         type: 'bar',
         stack: 'spend',
         data: personalEx,
         itemStyle: { color: '#FFD6E2', borderColor: '#222222', borderWidth: 2 }
       },
       {
-        name: 'Phần chịu trong nhóm',
+        name: t('reports.actualGroupShare'),
         type: 'bar',
         stack: 'spend',
         data: groupShare,
@@ -174,13 +175,13 @@ const groupBarOption = computed(() => {
     },
     series: [
       {
-        name: 'Đã ứng trả',
+        name: t('reports.paidForGroup'),
         type: 'bar',
         data: paid,
         itemStyle: { color: '#A8D8FF', borderColor: '#222222', borderWidth: 2, borderRadius: [6, 6, 0, 0] }
       },
       {
-        name: 'Phần thực chịu',
+        name: t('reports.actualGroupShare'),
         type: 'bar',
         data: share,
         itemStyle: { color: '#FFF1A8', borderColor: '#222222', borderWidth: 2, borderRadius: [6, 6, 0, 0] }
@@ -194,18 +195,18 @@ const groupBarOption = computed(() => {
   <div class="flex flex-col gap-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-extrabold">Thống kê & Báo cáo</h1>
+        <h1 class="text-3xl font-extrabold">{{ t('reports.title') }}</h1>
         <p class="text-sm text-ink-soft mt-1">
-          Phân tích thu chi cá nhân và báo cáo công nợ theo từng nhóm.
+          {{ t('reports.subtitle') }}
         </p>
       </div>
 
-      <div class="seg" role="tablist" aria-label="Loại báo cáo">
+      <div class="seg" role="tablist" :aria-label="t('reports.title')">
         <button type="button" :aria-pressed="mode === 'personal'" @click="mode = 'personal'">
-          A. Báo cáo cá nhân
+          A. {{ t('reports.modePersonal') }}
         </button>
         <button type="button" :aria-pressed="mode === 'group'" @click="mode = 'group'">
-          B. Báo cáo nhóm
+          B. {{ t('reports.modeGroup') }}
         </button>
       </div>
     </div>
@@ -213,7 +214,7 @@ const groupBarOption = computed(() => {
     <!-- A. Personal Report -->
     <template v-if="mode === 'personal'">
       <div class="panel p-5 flex flex-wrap items-center justify-between gap-4">
-        <div class="seg" role="group" aria-label="Tháng báo cáo">
+        <div class="seg" role="group" :aria-label="t('reports.month')">
           <button
             v-for="m in monthOptions"
             :key="m"
@@ -221,40 +222,40 @@ const groupBarOption = computed(() => {
             :aria-pressed="month === m"
             @click="month = m"
           >
-            Tháng {{ m.slice(5, 7) }}/{{ m.slice(0, 4) }}
+            {{ t('dashboard.monthFormat', { m: m.slice(5, 7), y: m.slice(0, 4) }) }}
           </button>
         </div>
 
         <label class="flex items-center gap-2.5 text-sm font-semibold cursor-pointer">
           <input v-model="includeGroupShare" type="checkbox" class="w-4 h-4 accent-[var(--color-lilac-deep)]" />
-          <span>Cộng phần nghĩa vụ chi tiêu của tôi trong nhóm ({{ vnd(monthGroupShare) }})</span>
+          <span>{{ t('reports.includeGroupNotice', { amount: vnd(monthGroupShare) }) }}</span>
         </label>
       </div>
 
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div class="panel p-4 bg-[var(--color-gain-bg)] min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Tổng thu nhập</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.totalIncome') }}</div>
           <div class="text-xl font-extrabold num mt-1 tracking-tight gain truncate">{{ vnd(monthPersonal.income) }}</div>
         </div>
         <div class="panel p-4 bg-[var(--color-loss-bg)] min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Tổng chi thực tế</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.totalExpense') }}</div>
           <div class="text-xl font-extrabold num mt-1 tracking-tight loss truncate">{{ vnd(totalActualExpense) }}</div>
         </div>
         <div class="panel p-4 bg-butter min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Số dư ròng</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.netSavings') }}</div>
           <div class="text-xl font-extrabold num mt-1 tracking-tight truncate">{{ vnd(actualBalance) }}</div>
         </div>
         <div class="panel p-4 bg-ground min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Danh mục chi nhiều nhất</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.topExpense') }}</div>
           <div class="text-base font-extrabold mt-1 truncate">
-            {{ topCategory ? `${topCategory.name} (${vnd(topCategory.value)})` : 'Chưa có' }}
+            {{ topCategory ? `${topCategory.name} (${vnd(topCategory.value)})` : t('common.empty') }}
           </div>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="panel p-6 flex flex-col gap-3">
-          <h2 class="text-xl font-extrabold">Cơ cấu chi tiêu theo danh mục</h2>
+          <h2 class="text-xl font-extrabold">{{ t('reports.byCategory') }}</h2>
           <div class="h-[300px] w-full">
             <ClientOnly>
               <VChart :option="personalPieOption" autoresize class="h-full w-full" />
@@ -263,7 +264,7 @@ const groupBarOption = computed(() => {
         </div>
 
         <div class="panel p-6 flex flex-col gap-3">
-          <h2 class="text-xl font-extrabold">So sánh thu & chi giữa các tháng</h2>
+          <h2 class="text-xl font-extrabold">{{ t('reports.monthlyCompare') }}</h2>
           <div class="h-[300px] w-full">
             <ClientOnly>
               <VChart :option="monthlyCompareOption" autoresize class="h-full w-full" />
@@ -277,46 +278,46 @@ const groupBarOption = computed(() => {
     <template v-else>
       <div class="panel p-5 flex flex-wrap items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3">
-          <label for="rep-group" class="text-sm font-bold">Chọn nhóm phân tích:</label>
+          <label for="rep-group" class="text-sm font-bold">{{ t('reports.selectGroupAnalysis') }}</label>
           <select id="rep-group" v-model="selectedGroupId" class="field w-auto font-bold">
             <option v-for="g in store.myGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
           </select>
         </div>
 
         <NuxtLink :to="`/groups/${selectedGroupId}`" class="btn btn-sm">
-          Mở trang nhóm
+          {{ t('reports.openGroupPage') }}
         </NuxtLink>
       </div>
 
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
         <div class="panel p-4 bg-sky min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Tổng chi phí nhóm</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.groupSpending') }}</div>
           <div class="text-lg font-extrabold num mt-1 tracking-tight truncate">{{ vnd(groupTotalSpend) }}</div>
         </div>
         <div class="panel p-4 bg-[var(--color-gain-bg)] min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Đã hoàn trả</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.settledTotal') }}</div>
           <div class="text-lg font-extrabold num mt-1 tracking-tight gain truncate">{{ vnd(groupSettledTotal) }}</div>
         </div>
         <div class="panel p-4 bg-[var(--color-loss-bg)] min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Công nợ chưa trả</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.unpaidTotal') }}</div>
           <div class="text-lg font-extrabold num mt-1 tracking-tight loss truncate">{{ vnd(groupUnpaidTotal) }}</div>
         </div>
         <div class="panel p-4 bg-butter min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Chi nhiều nhất</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.topSpender') }}</div>
           <div class="text-sm font-extrabold mt-1 truncate">
             {{ topPayer ? `${topPayer.user.name} (${vnd(topPayer.paid)})` : '—' }}
           </div>
         </div>
         <div class="panel p-4 bg-ground min-w-0 overflow-hidden">
-          <div class="text-xs font-semibold text-ink/75 truncate">Đang nợ nhiều nhất</div>
+          <div class="text-xs font-semibold text-ink/75 truncate">{{ t('reports.topDebtor') }}</div>
           <div class="text-sm font-extrabold mt-1 truncate">
-            {{ topDebtor ? `${topDebtor.user.name} (${vnd(-topDebtor.net)})` : 'Không có' }}
+            {{ topDebtor ? `${topDebtor.user.name} (${vnd(-topDebtor.net)})` : t('common.empty') }}
           </div>
         </div>
       </div>
 
       <div class="panel p-6 flex flex-col gap-3">
-        <h2 class="text-xl font-extrabold">So sánh Đã ứng trả và Phần thực chịu theo thành viên</h2>
+        <h2 class="text-xl font-extrabold">{{ t('reports.groupBarTitle') }}</h2>
         <div class="h-[320px] w-full">
           <ClientOnly>
             <VChart :option="groupBarOption" autoresize class="h-full w-full" />

@@ -4,6 +4,7 @@ import { vnd, vndShort } from '~/utils/money'
 
 const route = useRoute()
 const store = useAppStore()
+const { t, tCategoryName } = useI18n()
 const groupId = computed(() => String(route.params.id))
 const group = computed(() => store.group(groupId.value))
 
@@ -65,7 +66,8 @@ function copyCode() {
 </script>
 
 <template>
-  <div v-if="group">
+  <div class="group-page">
+    <div v-if="group">
     <GroupHeader :group-id="groupId" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 items-start">
@@ -73,7 +75,7 @@ function copyCode() {
         <PhotoStrip
           :slots="stripSlots"
           :caption="group.name"
-          :subcaption="`${expenses.length} khoản · ${vndShort(totalExpense)}`"
+          :subcaption="t('dashboard.itemCount', { count: expenses.length, total: vndShort(totalExpense) })"
           :tilt="-1.2"
           selected
         />
@@ -83,15 +85,15 @@ function copyCode() {
             class="btn btn-sm btn-ink w-full text-center"
             @click="shareLink"
           >
-            {{ copiedLink ? 'Đã sao chép link' : 'Chia sẻ link nhóm' }}
+            {{ copiedLink ? t('groups.copiedLink') : t('groups.shareLink') }}
           </button>
           <button
             type="button"
             class="btn btn-sm w-full text-center"
-            :title="`Mã mời: ${group.inviteCode}`"
+            :title="`${t('groups.inviteCode')} ${group.inviteCode}`"
             @click="copyCode"
           >
-            {{ copiedCode ? 'Đã sao chép mã' : 'Sao chép mã mời' }}
+            {{ copiedCode ? t('groups.copiedCode') : t('groups.copyCode') }}
           </button>
         </div>
       </div>
@@ -99,19 +101,19 @@ function copyCode() {
       <div class="flex flex-col gap-6">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <div class="panel p-3.5 sm:p-4 bg-sky min-w-0 overflow-hidden flex flex-col justify-between">
-            <div class="text-xs font-semibold text-ink/75 truncate">Tổng chi nhóm</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('groups.totalExpense') || t('dashboard.totalGroupSpent') }}</div>
             <div class="text-base sm:text-lg xl:text-xl font-extrabold num mt-1 tracking-tight truncate" :title="vnd(totalExpense)">{{ vnd(totalExpense) }}</div>
           </div>
           <div class="panel p-3.5 sm:p-4 bg-butter min-w-0 overflow-hidden flex flex-col justify-between">
-            <div class="text-xs font-semibold text-ink/75 truncate">Bạn đã trả hộ</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('groups.youPaidForOthers') }}</div>
             <div class="text-base sm:text-lg xl:text-xl font-extrabold num mt-1 tracking-tight truncate" :title="vnd(myBalance.paid)">{{ vnd(myBalance.paid) }}</div>
           </div>
           <div class="panel p-3.5 sm:p-4 bg-ground min-w-0 overflow-hidden flex flex-col justify-between">
-            <div class="text-xs font-semibold text-ink/75 truncate">Phần bạn thực chịu</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('groups.yourActualShare') }}</div>
             <div class="text-base sm:text-lg xl:text-xl font-extrabold num mt-1 tracking-tight truncate" :title="vnd(myBalance.share)">{{ vnd(myBalance.share) }}</div>
           </div>
           <div class="panel p-3.5 sm:p-4 min-w-0 overflow-hidden flex flex-col justify-between" :class="myBalance.net >= 0 ? 'bg-[var(--color-gain-bg)]' : 'bg-[var(--color-loss-bg)]'">
-            <div class="text-xs font-semibold text-ink/75 truncate">Số dư ròng của bạn</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('groups.yourNetBalance') }}</div>
             <div
               class="text-base sm:text-lg xl:text-xl font-extrabold num mt-1 tracking-tight truncate"
               :class="myBalance.net >= 0 ? 'gain' : 'loss'"
@@ -125,9 +127,9 @@ function copyCode() {
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div class="panel p-6 flex flex-col gap-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-extrabold">Ai đang nợ ai</h2>
+              <h2 class="text-xl font-extrabold text-ink">{{ t('groups.whoOwesWhom') }}</h2>
               <NuxtLink :to="`/groups/${groupId}/balances`" class="text-sm font-semibold underline">
-                Thanh toán ({{ vnd(totalUnpaid) }})
+                {{ t('groups.balances') }} ({{ vnd(totalUnpaid) }})
               </NuxtLink>
             </div>
 
@@ -147,11 +149,11 @@ function copyCode() {
                   <div>
                     <div class="text-sm">
                       <strong class="font-extrabold">{{ store.user(d.fromId)?.name }}</strong>
-                      cần trả
+                      {{ t('groups.needsToPay') }}
                       <strong class="font-extrabold">{{ store.user(d.toId)?.name }}</strong>
                     </div>
                     <div class="hand text-lg text-ink-soft">
-                      {{ d.status === 'partial' ? `Đã trả ${vnd(d.paid)}, còn lại:` : 'Chưa thanh toán' }}
+                      {{ d.status === 'partial' ? `${t('groups.partiallyPaid')} (${vnd(d.paid)})` : t('groups.unsettled') }}
                     </div>
                   </div>
                 </div>
@@ -159,15 +161,15 @@ function copyCode() {
               </div>
             </div>
             <p v-else class="hand text-xl text-ink-soft py-4">
-              Mọi khoản nợ trong nhóm đã được thanh toán xong.
+              {{ t('groups.allSettled') }}
             </p>
           </div>
 
           <div class="panel p-6 flex flex-col gap-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-extrabold">Khoản chi gần đây</h2>
+              <h2 class="text-xl font-extrabold text-ink">{{ t('groups.recentExpensesTitle') }}</h2>
               <NuxtLink :to="`/groups/${groupId}/expenses`" class="text-sm font-semibold underline">
-                Tất cả ({{ expenses.length }})
+                {{ t('common.all') }} ({{ expenses.length }})
               </NuxtLink>
             </div>
 
@@ -185,9 +187,9 @@ function copyCode() {
                     class="w-9 h-9 object-contain"
                   />
                   <div>
-                    <div class="font-bold text-sm">{{ e.title }}</div>
+                    <div class="font-bold text-sm text-ink">{{ e.title }}</div>
                     <div class="text-xs text-ink-soft">
-                      {{ store.user(e.payerId)?.name }} trả · chia {{ e.splits.length }} người · {{ e.date }}
+                      {{ tCategoryName(store.category(e.categoryId)) }} · {{ store.user(e.payerId)?.name }} · {{ e.date }}
                     </div>
                   </div>
                 </div>
@@ -195,37 +197,38 @@ function copyCode() {
               </NuxtLink>
             </div>
             <p v-else class="hand text-xl text-ink-soft py-4">
-              Chưa có khoản chi chung nào trong nhóm.
+              {{ t('groups.noExpensesYet') }}
             </p>
           </div>
         </div>
 
         <div class="panel p-5 flex flex-wrap items-center justify-between gap-4">
           <div class="text-sm">
-            Trạng thái nhóm:
-            <strong class="font-extrabold">{{ group.status === 'active' ? 'Đang hoạt động' : 'Đã lưu trữ (chỉ xem lịch sử)' }}</strong>
+            {{ t('groups.groupStatus') }}
+            <strong class="font-extrabold">{{ group.status === 'active' ? t('groups.activeFilter') : t('groups.archivedViewOnly') }}</strong>
           </div>
           <button
             type="button"
             class="btn btn-sm"
             @click="store.setGroupStatus(groupId, group.status === 'active' ? 'archived' : 'active')"
           >
-            {{ group.status === 'active' ? 'Lưu trữ nhóm này' : 'Mở lại nhóm' }}
+            {{ group.status === 'active' ? t('groups.archiveBtn') : t('groups.reactivateBtn') }}
           </button>
         </div>
       </div>
     </div>
   </div>
   <div v-else-if="!store.hydrated" class="panel p-8 text-center text-ink-soft">
-    Đang tải dữ liệu nhóm từ máy chủ...
+    {{ t('common.loading') }}
   </div>
   <DoodleScene
     v-else
     seed="missing-group"
-    title="Không tìm thấy nhóm"
-    caption="Nhóm này không tồn tại hoặc bạn chưa tham gia."
+    :title="t('groups.noGroups')"
+    caption="..."
   >
-    <NuxtLink to="/groups" class="btn btn-ink">Về danh sách nhóm</NuxtLink>
+    <NuxtLink to="/groups" class="btn btn-ink">{{ t('groups.groupList') }}</NuxtLink>
   </DoodleScene>
+  </div>
 </template>
 

@@ -16,6 +16,7 @@ interface FeedbackItem {
 
 const store = useAppStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const activeTab = ref<'feedbacks' | 'users'>('feedbacks')
 const statusFilter = ref<'all' | 'pending' | 'read' | 'resolved'>('all')
@@ -244,14 +245,14 @@ useHead({
       <div class="panel p-6 sm:p-8 bg-paper flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div class="flex items-center gap-2 mb-2">
-            <span class="chip bg-butter font-bold text-xs uppercase tracking-wider">Khu vực quản trị</span>
-            <span class="chip bg-gain-bg text-gain font-bold text-xs">Admin đang hoạt động</span>
+            <span class="chip bg-butter font-bold text-xs uppercase tracking-wider">{{ t('admin.badge') }}</span>
+            <span class="chip bg-gain-bg text-gain font-bold text-xs">{{ t('admin.activeBadge') }}</span>
           </div>
           <h1 class="text-2xl sm:text-3xl font-black text-ink tracking-tight">
-            Trung tâm quản trị ShareSpend
+            {{ t('admin.title') }}
           </h1>
           <p class="text-sm text-ink-soft mt-1">
-            Quản lý tất cả phản hồi / ý kiến đóng góp từ người dùng và kiểm soát phân quyền tài khoản hệ thống.
+            {{ t('admin.subtitle') }}
           </p>
         </div>
 
@@ -262,7 +263,7 @@ useHead({
             class="btn btn-sm bg-paper hover:bg-ground font-semibold"
             :disabled="loadingFeedbacks"
           >
-            {{ loadingFeedbacks ? 'Đang tải lại...' : 'Tải lại dữ liệu' }}
+            {{ loadingFeedbacks ? t('common.loading') : t('admin.reload') }}
           </button>
         </div>
       </div>
@@ -288,7 +289,7 @@ useHead({
             @click="activeTab = 'feedbacks'"
             class="font-bold"
           >
-            Ý kiến đóng góp ({{ feedbacks.length }})
+            {{ t('admin.feedbacksTab') }} ({{ feedbacks.length }})
           </button>
           <button
             type="button"
@@ -296,15 +297,15 @@ useHead({
             @click="activeTab = 'users'"
             class="font-bold"
           >
-            Quản lý tài khoản ({{ store.users.length }})
+            {{ t('admin.usersTab') }} ({{ store.users.length }})
           </button>
         </div>
 
         <!-- Quick counters for feedbacks -->
         <div v-if="activeTab === 'feedbacks'" class="flex items-center gap-2 text-xs font-bold">
-          <span class="chip bg-butter">Chờ xử lý: {{ pendingCount }}</span>
-          <span class="chip bg-sky">Đã đọc: {{ readCount }}</span>
-          <span class="chip bg-gain-bg text-gain">Đã giải quyết: {{ resolvedCount }}</span>
+          <span class="chip bg-butter">{{ t('admin.pending') }}: {{ pendingCount }}</span>
+          <span class="chip bg-sky">{{ t('admin.read') }}: {{ readCount }}</span>
+          <span class="chip bg-gain-bg text-gain">{{ t('admin.resolved') }}: {{ resolvedCount }}</span>
         </div>
       </div>
 

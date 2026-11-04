@@ -11,6 +11,7 @@ useHead({
 const route = useRoute()
 const router = useRouter()
 const store = useAppStore()
+const { t } = useI18n()
 
 const codeInput = ref(String(route.query.code || '').trim().toUpperCase())
 const loading = ref(false)
@@ -113,13 +114,13 @@ watch(() => route.query.code, (newCode) => {
   <div class="max-w-3xl mx-auto flex flex-col gap-8 py-4">
     <div>
       <NuxtLink to="/groups" class="text-sm font-semibold underline text-ink-soft hover:text-ink">
-        Quay lại danh sách nhóm
+        {{ t('common.back') }}
       </NuxtLink>
       <h1 class="text-3xl sm:text-4xl font-extrabold mt-2 tracking-tight">
-        Lời mời tham gia nhóm
+        {{ t('join.title') }}
       </h1>
       <p class="text-sm sm:text-base text-ink-soft mt-1">
-        Chia sẻ chi phí chuyến đi, bữa ăn chung và tính toán công nợ minh bạch cùng bạn bè.
+        {{ t('join.subtitle') }}
       </p>
     </div>
 
@@ -129,7 +130,7 @@ watch(() => route.query.code, (newCode) => {
         <PhotoStrip
           :slots="stripSlots"
           :caption="group.name"
-          :subcaption="`${group.memberCount} thành viên`"
+          :subcaption="`${group.memberCount} ${t('dashboard.members')}`"
           :tilt="-1.5"
           selected
         />
@@ -138,14 +139,14 @@ watch(() => route.query.code, (newCode) => {
           class="btn btn-sm"
           @click="copyInviteLink"
         >
-          {{ copied ? 'Đã sao chép link mời' : 'Sao chép link mời' }}
+          {{ copied ? t('join.copiedInvite') : t('join.copyInvite') }}
         </button>
       </div>
 
       <div class="panel p-6 sm:p-8 flex flex-col gap-5">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="chip bg-lilac">Mã mời: {{ group.inviteCode }}</span>
-          <span class="text-xs font-semibold text-ink-soft">Tạo bởi {{ group.creatorName }}</span>
+          <span class="chip bg-lilac">{{ t('groups.inviteCode') }} {{ group.inviteCode }}</span>
+          <span class="text-xs font-semibold text-ink-soft">{{ t('dashboard.createdBy') }} {{ group.creatorName }}</span>
         </div>
 
         <div>
@@ -157,11 +158,11 @@ watch(() => route.query.code, (newCode) => {
 
         <div class="p-4 rounded-[12px] bg-ground border-2 border-ink flex items-center justify-between">
           <div>
-            <div class="text-xs font-semibold text-ink-soft">Thành viên hiện tại</div>
-            <div class="text-xl font-extrabold num mt-0.5">{{ group.memberCount }} người</div>
+            <div class="text-xs font-semibold text-ink-soft">{{ t('join.currentMembers') }}</div>
+            <div class="text-xl font-extrabold num mt-0.5">{{ group.memberCount }} {{ t('dashboard.members') }}</div>
           </div>
           <span class="chip" :class="group.status === 'active' ? 'bg-[var(--color-gain-bg)]' : 'bg-butter'">
-            {{ group.status === 'active' ? 'Đang hoạt động' : 'Đã lưu trữ' }}
+            {{ group.status === 'active' ? t('groups.activeFilter') : t('groups.archivedFilter') }}
           </span>
         </div>
 
@@ -175,16 +176,16 @@ watch(() => route.query.code, (newCode) => {
               class="btn btn-ink w-full text-center opacity-60 cursor-not-allowed"
               disabled
             >
-              Đang đồng bộ dữ liệu...
+              {{ t('common.loading') }}
             </button>
           </template>
 
           <template v-else-if="isAlreadyMember">
             <p class="gain text-sm font-semibold">
-              Bạn đã tham gia nhóm này rồi!
+              {{ t('join.alreadyMember') }}
             </p>
             <NuxtLink :to="`/groups/${group.id}`" class="btn btn-ink text-center">
-              Mở chi tiết nhóm
+              {{ t('dashboard.openGroupDetails') }}
             </NuxtLink>
           </template>
 
@@ -195,10 +196,10 @@ watch(() => route.query.code, (newCode) => {
               :disabled="joining || group.status === 'archived'"
               @click="handleJoin"
             >
-              {{ joining ? 'Đang tham gia...' : 'Tham gia nhóm ngay' }}
+              {{ joining ? t('join.joining') : t('join.joinNow') }}
             </button>
             <p class="text-xs text-ink-soft text-center">
-              Tài khoản đang đăng nhập: <strong>{{ store.me.name }}</strong> ({{ store.me.email }})
+              {{ t('footer.loggedInAs') }} <strong>{{ store.me.name }}</strong> ({{ store.me.email }})
             </p>
           </template>
 
@@ -208,10 +209,10 @@ watch(() => route.query.code, (newCode) => {
               class="btn btn-ink w-full text-center"
               @click="handleJoin"
             >
-              Đăng nhập / Đăng ký để vào nhóm
+              {{ t('join.loginToJoin') }}
             </button>
             <p class="text-xs text-ink-soft text-center">
-              Sau khi đăng nhập bạn sẽ tự động được thêm vào nhóm này.
+              {{ t('join.loginHint') }}
             </p>
           </template>
         </div>
@@ -221,21 +222,21 @@ watch(() => route.query.code, (newCode) => {
     <!-- Manual Code Input if not found or code missing -->
     <div v-else class="panel p-6 sm:p-8 flex flex-col gap-5 max-w-lg mx-auto w-full">
       <div>
-        <h2 class="text-xl font-extrabold">Nhập mã mời nhóm</h2>
+        <h2 class="text-xl font-extrabold">{{ t('join.enterCodeTitle') }}</h2>
         <p class="text-sm text-ink-soft mt-1">
-          Dán mã mời hoặc đường link được bạn bè gửi để xem trước và tham gia nhóm.
+          {{ t('join.enterCodeDesc') }}
         </p>
       </div>
 
       <form class="flex flex-col gap-4" @submit.prevent="fetchInvite">
         <div>
-          <label for="inv-code" class="field-label">Mã mời nhóm</label>
+          <label for="inv-code" class="field-label">{{ t('groups.inviteCodeLabel') }}</label>
           <input
             id="inv-code"
             v-model="codeInput"
             type="text"
             class="field uppercase font-extrabold"
-            placeholder="Ví dụ: NHOM-ABCD"
+            placeholder="e.g. NHOM-ABCD"
           />
         </div>
 
@@ -243,9 +244,9 @@ watch(() => route.query.code, (newCode) => {
 
         <div class="flex items-center gap-3 pt-1">
           <button type="submit" class="btn btn-ink" :disabled="loading || !codeInput.trim()">
-            {{ loading ? 'Đang tìm kiếm...' : 'Kiểm tra mã mời' }}
+            {{ loading ? t('common.loading') : t('join.checkCode') }}
           </button>
-          <NuxtLink to="/groups" class="btn">Hủy</NuxtLink>
+          <NuxtLink to="/groups" class="btn">{{ t('common.cancel') }}</NuxtLink>
         </div>
       </form>
     </div>

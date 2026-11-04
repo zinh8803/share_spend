@@ -11,6 +11,7 @@ const emit = defineEmits<{
 }>()
 
 const store = useAppStore()
+const { t } = useI18n()
 
 const email = ref('')
 const content = ref('')
@@ -38,11 +39,11 @@ async function handleSubmit() {
   const trimmedContent = content.value.trim()
 
   if (!trimmedEmail || !trimmedEmail.includes('@')) {
-    errorMsg.value = 'Vui lòng nhập địa chỉ email hợp lệ.'
+    errorMsg.value = t('feedback.email') + ' không hợp lệ.'
     return
   }
   if (!trimmedContent || trimmedContent.length < 5) {
-    errorMsg.value = 'Nội dung ý kiến cần có tối thiểu 5 ký tự.'
+    errorMsg.value = t('feedback.content') + ' cần tối thiểu 5 ký tự.'
     return
   }
 
@@ -59,7 +60,7 @@ async function handleSubmit() {
     submitted.value = true
     content.value = ''
   } catch (err: any) {
-    errorMsg.value = err?.data?.statusMessage || err?.message || 'Có lỗi xảy ra khi gửi ý kiến. Vui lòng thử lại.'
+    errorMsg.value = err?.data?.statusMessage || err?.message || 'Error sending feedback.'
   } finally {
     loading.value = false
   }
@@ -86,21 +87,21 @@ function handleReset() {
     >
       <div class="flex items-start justify-between gap-4 border-b-2 border-line pb-4">
         <div>
-          <span class="chip bg-lilac mb-1.5 text-xs font-bold uppercase tracking-wider">Hòm thư góp ý</span>
+          <span class="chip bg-lilac mb-1.5 text-xs font-bold uppercase tracking-wider">{{ t('feedback.badge') }}</span>
           <h2 id="feedback-title" class="text-xl sm:text-2xl font-black text-ink">
-            Đóng góp ý kiến
+            {{ t('feedback.title') }}
           </h2>
           <p class="text-xs sm:text-sm text-ink-soft mt-1">
-            Góp ý của bạn giúp ShareSpend ngày càng hoàn thiện và hữu ích hơn!
+            {{ t('feedback.subtitle') }}
           </p>
         </div>
         <button
           type="button"
           @click="close"
           class="btn btn-sm btn-ghost font-bold text-ink-soft hover:text-ink px-2.5 py-1"
-          aria-label="Đóng cửa sổ góp ý"
+          :aria-label="t('feedback.close')"
         >
-          Đóng
+          {{ t('feedback.close') }}
         </button>
       </div>
 
@@ -109,9 +110,9 @@ function handleReset() {
           OK
         </div>
         <div>
-          <h3 class="text-lg font-bold text-ink">Cảm ơn bạn rất nhiều!</h3>
+          <h3 class="text-lg font-bold text-ink">{{ t('feedback.thankYou') }}</h3>
           <p class="text-sm text-ink-soft mt-1 max-w-sm">
-            Ý kiến của bạn đã được ghi nhận vào hệ thống. Đội ngũ ShareSpend sẽ xem xét và tiếp thu ngay.
+            {{ t('feedback.successDesc') }}
           </p>
         </div>
         <div class="flex items-center gap-3 mt-2">
@@ -120,14 +121,14 @@ function handleReset() {
             @click="handleReset"
             class="btn btn-sm bg-butter"
           >
-            Gửi thêm ý kiến
+            {{ t('feedback.sendMore') }}
           </button>
           <button
             type="button"
             @click="close"
             class="btn btn-sm btn-ink"
           >
-            Xong
+            {{ t('feedback.done') }}
           </button>
         </div>
       </div>
@@ -135,32 +136,32 @@ function handleReset() {
       <form v-else @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <div>
           <label for="feedback-email" class="field-label">
-            Email của bạn <span class="text-loss">*</span>
+            {{ t('feedback.email') }} <span class="text-loss">*</span>
           </label>
           <input
             id="feedback-email"
             v-model="email"
             type="email"
             required
-            placeholder="vd: ban@gmail.com"
+            placeholder="name@example.com"
             class="field"
             :disabled="loading"
           >
           <p class="text-[11px] text-ink-soft mt-1">
-            Dùng để liên hệ trao đổi thêm hoặc cập nhật kết quả xử lý.
+            {{ t('feedback.emailHint') }}
           </p>
         </div>
 
         <div>
           <label for="feedback-content" class="field-label">
-            Nội dung đóng góp ý kiến <span class="text-loss">*</span>
+            {{ t('feedback.content') }} <span class="text-loss">*</span>
           </label>
           <textarea
             id="feedback-content"
             v-model="content"
             required
             rows="5"
-            placeholder="Chia sẻ ý kiến, trải nghiệm, báo lỗi hoặc tính năng bạn muốn có trên ShareSpend..."
+            :placeholder="t('feedback.contentPlaceholder')"
             class="field resize-y"
             :disabled="loading"
           ></textarea>
@@ -177,14 +178,14 @@ function handleReset() {
             class="btn btn-sm btn-ghost font-semibold text-ink-soft"
             :disabled="loading"
           >
-            Hủy
+            {{ t('common.cancel') }}
           </button>
           <button
             type="submit"
             class="btn btn-sm btn-ink font-bold px-6"
             :disabled="loading"
           >
-            {{ loading ? 'Đang gửi...' : 'Gửi ý kiến' }}
+            {{ loading ? t('feedback.sending') : t('feedback.send') }}
           </button>
         </div>
       </form>

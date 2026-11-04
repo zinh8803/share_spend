@@ -11,6 +11,7 @@ useHead({
 const store = useAppStore()
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const mode = ref<'login' | 'register' | 'forgot'>('register')
 const name = ref('')
@@ -30,7 +31,9 @@ const previewFriends = [
 async function submit() {
   error.value = ''
   if (!email.value.trim() || !email.value.includes('@')) {
-    error.value = 'Nhập địa chỉ email hợp lệ có chứa ký tự @.'
+    error.value = t('nav.transactions') === 'Transactions'
+      ? 'Please enter a valid email address containing @.'
+      : 'Nhập địa chỉ email hợp lệ có chứa ký tự @.'
     return
   }
   if (mode.value === 'forgot') {
@@ -38,14 +41,18 @@ async function submit() {
     return
   }
   if (!password.value || password.value.length < 4) {
-    error.value = 'Mật khẩu cần tối thiểu 4 ký tự.'
+    error.value = t('nav.transactions') === 'Transactions'
+      ? 'Password must be at least 4 characters.'
+      : 'Mật khẩu cần tối thiểu 4 ký tự.'
     return
   }
   submitting.value = true
   try {
     if (mode.value === 'register') {
       if (!name.value.trim()) {
-        error.value = 'Nhập tên hiển thị để bạn bè nhận ra trong dải ảnh nhóm.'
+        error.value = t('nav.transactions') === 'Transactions'
+          ? 'Please enter your display name.'
+          : 'Nhập tên hiển thị để bạn bè nhận ra trong dải ảnh nhóm.'
         return
       }
       await store.register(name.value.trim(), email.value.trim(), password.value)
@@ -57,7 +64,7 @@ async function submit() {
       : '/'
     router.push(redirect)
   } catch (e: any) {
-    error.value = e?.data?.statusMessage || e?.message || 'Không thể xác thực tài khoản.'
+    error.value = e?.data?.statusMessage || e?.message || (t('nav.transactions') === 'Transactions' ? 'Could not authenticate.' : 'Không thể xác thực tài khoản.')
   } finally {
     submitting.value = false
   }
@@ -80,64 +87,64 @@ async function submit() {
       <div class="flex items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl sm:text-3xl font-extrabold">
-            {{ mode === 'login' ? 'Đăng nhập vào ShareSpend' : mode === 'register' ? 'Tạo tài khoản mới' : 'Khôi phục mật khẩu' }}
+            {{ mode === 'login' ? t('auth.loginTitle') : mode === 'register' ? t('auth.registerTitle') : t('auth.forgotTitle') }}
           </h1>
           <p class="hand text-xl text-ink-soft mt-1">
-            Tài khoản, giao dịch và nhóm của bạn được đồng bộ an toàn và bảo mật.
+            {{ t('auth.subtitle') }}
           </p>
         </div>
         <img src="/stickers/camera.png" alt="Máy ảnh" class="w-14 h-14 object-contain shrink-0" />
       </div>
 
-      <div class="seg self-start" role="tablist" aria-label="Chế độ xác thực">
+      <div class="seg self-start" role="tablist" :aria-label="t('header.account')">
         <button type="button" :aria-pressed="mode === 'register'" @click="mode = 'register'; error = ''; forgotSent = false">
-          Đăng ký
+          {{ t('auth.registerTab') }}
         </button>
         <button type="button" :aria-pressed="mode === 'login'" @click="mode = 'login'; error = ''; forgotSent = false">
-          Đăng nhập
+          {{ t('auth.loginTab') }}
         </button>
         <button type="button" :aria-pressed="mode === 'forgot'" @click="mode = 'forgot'; error = ''; forgotSent = false">
-          Quên mật khẩu
+          {{ t('auth.forgotTab') }}
         </button>
       </div>
 
       <form class="flex flex-col gap-4" @submit.prevent="submit">
         <div v-if="mode === 'register'">
-          <label for="auth-name" class="field-label">Tên hiển thị</label>
-          <input id="auth-name" v-model="name" type="text" class="field" placeholder="Nhập tên của bạn" />
+          <label for="auth-name" class="field-label">{{ t('settings.displayName') }}</label>
+          <input id="auth-name" v-model="name" type="text" class="field" :placeholder="t('auth.namePlaceholder')" />
         </div>
 
         <div>
-          <label for="auth-email" class="field-label">Email</label>
+          <label for="auth-email" class="field-label">{{ t('settings.email') }}</label>
           <input
             id="auth-email"
             v-model="email"
             type="email"
             class="field"
             :aria-invalid="!!error"
-            placeholder="ban@domain.com"
+            :placeholder="t('auth.emailPlaceholder')"
           />
         </div>
 
         <div v-if="mode !== 'forgot'">
-          <label for="auth-password" class="field-label">Mật khẩu</label>
+          <label for="auth-password" class="field-label">{{ t('nav.transactions') === 'Transactions' ? 'Password' : 'Mật khẩu' }}</label>
           <input
             id="auth-password"
             v-model="password"
             type="password"
             class="field"
-            placeholder="Tối thiểu 4 ký tự"
+            :placeholder="t('auth.passwordPlaceholder')"
           />
         </div>
 
         <p v-if="error" role="alert" class="field-error">{{ error }}</p>
         <p v-if="forgotSent" role="status" class="rounded-xl border-2 border-ink bg-[var(--color-gain-bg)] p-3 text-sm font-semibold">
-          Đã gửi hướng dẫn đặt lại mật khẩu tới {{ email }}.
+          {{ t('nav.transactions') === 'Transactions' ? `Password reset instructions sent to ${email}.` : `Đã gửi hướng dẫn đặt lại mật khẩu tới ${email}.` }}
         </p>
 
         <div class="flex flex-wrap items-center gap-3 pt-2">
           <button type="submit" class="btn btn-ink" :disabled="submitting">
-            {{ submitting ? 'Đang xử lý...' : mode === 'login' ? 'Đăng nhập' : mode === 'register' ? 'Tạo tài khoản' : 'Gửi link khôi phục' }}
+            {{ submitting ? t('common.loading') : mode === 'login' ? t('auth.loginBtn') : mode === 'register' ? t('auth.registerBtn') : t('auth.forgotBtn') }}
           </button>
         </div>
       </form>

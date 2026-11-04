@@ -3,6 +3,7 @@ import { useAppStore, FRAMES, AVATAR_PRESETS, type Gender } from '~/stores/app'
 
 const store = useAppStore()
 const router = useRouter()
+const { lang, setLang, t } = useI18n()
 
 const name = ref(store.me.name)
 const email = ref(store.me.email)
@@ -80,9 +81,9 @@ function handleLogout() {
 <template>
   <div class="max-w-4xl mx-auto flex flex-col gap-7">
     <div>
-      <h1 class="text-3xl font-extrabold">Cài đặt tài khoản & hồ sơ</h1>
+      <h1 class="text-3xl font-extrabold text-ink">{{ t('settings.title') }}</h1>
       <p class="text-sm text-ink-soft mt-1">
-        Tùy chỉnh nhân vật nam/nữ, màu khung photobooth, tên hiển thị và thông tin cá nhân.
+        {{ t('settings.subtitle') }}
       </p>
     </div>
 
@@ -92,37 +93,58 @@ function handleLogout() {
         <div class="flex items-center gap-4 p-4 rounded-[12px] bg-ground border-2 border-ink">
           <PhotoAvatar :avatar="avatar" :bg="frame" :size="76" :label="name || store.me.name" />
           <div class="min-w-0">
-            <h2 class="text-xl font-extrabold truncate">{{ name || store.me.name }}</h2>
+            <h2 class="text-xl font-extrabold truncate text-ink">{{ name || store.me.name }}</h2>
             <p class="hand text-lg text-ink-soft">
-              Nhân vật {{ gender === 'male' ? 'Nam' : 'Nữ' }} · {{ AVATAR_PRESETS.find(p => p.id === avatar)?.label || 'Photobooth' }}
+              {{ gender === 'male' ? t('settings.male') : t('settings.female') }} · {{ AVATAR_PRESETS.find(p => p.id === avatar)?.label || 'Photobooth' }}
             </p>
+          </div>
+        </div>
+
+        <!-- Language Selection (VI / EN) -->
+        <div>
+          <label class="field-label">{{ t('settings.language') }}</label>
+          <div class="seg w-full sm:w-auto" role="group" :aria-label="t('settings.language')">
+            <button
+              type="button"
+              :aria-pressed="lang === 'vi'"
+              @click="setLang('vi')"
+            >
+              {{ t('settings.langVi') }}
+            </button>
+            <button
+              type="button"
+              :aria-pressed="lang === 'en'"
+              @click="setLang('en')"
+            >
+              {{ t('settings.langEn') }}
+            </button>
           </div>
         </div>
 
         <!-- Gender Selection (Nam / Nữ) -->
         <div>
-          <label class="field-label">Giới tính nhân vật đại diện</label>
-          <div class="seg w-full sm:w-auto" role="group" aria-label="Chọn giới tính">
+          <label class="field-label">{{ t('settings.gender') }}</label>
+          <div class="seg w-full sm:w-auto" role="group" :aria-label="t('settings.gender')">
             <button
               type="button"
               :aria-pressed="gender === 'male'"
               @click="setGender('male')"
             >
-              Nhân vật Nam
+              {{ t('settings.male') }}
             </button>
             <button
               type="button"
               :aria-pressed="gender === 'female'"
               @click="setGender('female')"
             >
-              Nhân vật Nữ
+              {{ t('settings.female') }}
             </button>
           </div>
         </div>
 
         <!-- Avatar Character Picker -->
         <div>
-          <label class="field-label">Chọn phong cách nhân vật ({{ gender === 'male' ? 'Nam' : 'Nữ' }})</label>
+          <label class="field-label">{{ t('settings.avatarPreset') }} ({{ gender === 'male' ? t('settings.male') : t('settings.female') }})</label>
           <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
             <button
               v-for="p in currentPresets"
@@ -141,7 +163,7 @@ function handleLogout() {
 
         <!-- Frame Color Picker -->
         <div>
-          <label class="field-label">Màu nền khung ảnh photobooth</label>
+          <label class="field-label">{{ t('settings.frameColor') }}</label>
           <div class="flex flex-wrap gap-2.5">
             <button
               v-for="color in FRAMES"
@@ -158,12 +180,12 @@ function handleLogout() {
 
         <!-- Name & Email Inputs -->
         <div>
-          <label for="st-name" class="field-label">Tên hiển thị</label>
+          <label for="st-name" class="field-label">{{ t('settings.displayName') }}</label>
           <input id="st-name" v-model="name" type="text" class="field" />
         </div>
 
         <div>
-          <label for="st-email" class="field-label">Email</label>
+          <label for="st-email" class="field-label">{{ t('settings.email') }}</label>
           <input id="st-email" v-model="email" type="email" class="field" />
         </div>
 
@@ -185,14 +207,14 @@ function handleLogout() {
         </div>
 
         <p v-if="saved" role="status" class="gain text-sm font-semibold">
-          Đã lưu thông tin cá nhân và nhân vật đại diện.
+          {{ t('settings.saved') }}
         </p>
 
         <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-          <button type="submit" class="btn btn-ink" :disabled="saving">
-            {{ saving ? 'Đang lưu...' : 'Lưu cài đặt' }}
+          <button type="submit" class="btn btn-ink font-bold" :disabled="saving">
+            {{ saving ? t('settings.savingBtn') : t('settings.saveBtn') }}
           </button>
-          <button type="button" class="btn loss" @click="handleLogout">Đăng xuất</button>
+          <button type="button" class="btn loss font-bold" @click="handleLogout">{{ t('settings.logout') }}</button>
         </div>
       </form>
 
@@ -200,7 +222,7 @@ function handleLogout() {
       <div class="flex flex-col gap-6">
         <div class="panel p-6 flex flex-col gap-3">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-extrabold">Lịch sử hoạt động</h2>
+            <h2 class="text-xl font-extrabold text-ink">{{ t('settings.activity') }}</h2>
             <span class="text-xs text-ink-soft font-semibold">Của bạn & nhóm</span>
           </div>
           <p class="text-xs text-ink-soft">
@@ -223,7 +245,7 @@ function handleLogout() {
             </li>
           </ul>
           <p v-else class="hand text-lg text-ink-soft py-3">
-            Chưa có hoạt động nào trong nhóm hoặc tài khoản của bạn.
+            {{ t('settings.noActivity') }}
           </p>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { parseVnd, vnd } from '~/utils/money'
 
 const route = useRoute()
 const store = useAppStore()
+const { t, tDebtStatus } = useI18n()
 const groupId = computed(() => String(route.params.id))
 const group = computed(() => store.group(groupId.value))
 
@@ -46,29 +47,24 @@ async function submitSettle() {
   })
   activeDebt.value = null
 }
-
-const statusLabel: Record<string, string> = {
-  pending: 'Pending · Chưa trả',
-  partial: 'Partially Paid · Trả một phần',
-  paid: 'Paid · Đã tất toán'
-}
 </script>
 
 <template>
-  <div v-if="group">
+  <div class="group-page">
+    <div v-if="group">
     <GroupHeader :group-id="groupId" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-7 items-start">
       <div class="panel p-6 flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-extrabold">Danh sách công nợ trực tiếp</h2>
+            <h2 class="text-xl font-extrabold">{{ t('groups.directDebtsTitle') }}</h2>
             <p class="text-xs text-ink-soft mt-0.5">
-              Tính tự động từ các hóa đơn và lần trả tiền đã xác nhận.
+              {{ t('groups.directDebtsDesc') }}
             </p>
           </div>
           <NuxtLink :to="`/groups/${groupId}/settlements`" class="text-sm font-semibold underline">
-            Lịch sử thanh toán
+            {{ t('groups.settlementHistory') }}
           </NuxtLink>
         </div>
 
@@ -89,18 +85,18 @@ const statusLabel: Record<string, string> = {
               <div>
                 <div class="text-base">
                   <strong class="font-extrabold">{{ store.user(d.fromId)?.name }}</strong>
-                  nợ
+                  {{ t('groups.owes') }}
                   <strong class="font-extrabold">{{ store.user(d.toId)?.name }}</strong>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 mt-1">
                   <span class="chip text-xs" :class="d.status === 'paid' ? 'bg-[var(--color-gain-bg)]' : d.status === 'partial' ? 'bg-butter' : 'bg-ground'">
-                    {{ statusLabel[d.status] }}
+                    {{ tDebtStatus(d.status) }}
                   </span>
                   <span v-if="d.paid > 0" class="text-xs text-ink-soft num">
-                    Đã trả {{ vnd(d.paid) }} / {{ vnd(d.gross) }}
+                    {{ t('groups.paidPortion', { paid: vnd(d.paid), gross: vnd(d.gross) }) }}
                   </span>
                   <span v-if="d.pendingAmount > 0" class="text-xs font-semibold text-lilac-deep num">
-                    Chờ xác nhận: {{ vnd(d.pendingAmount) }}
+                    {{ t('groups.pendingConfirmation', { amount: vnd(d.pendingAmount) }) }}
                   </span>
                 </div>
               </div>
@@ -114,7 +110,7 @@ const statusLabel: Record<string, string> = {
                 class="btn btn-sm bg-butter"
                 @click="openSettle(d)"
               >
-                Ghi nhận trả tiền
+                {{ t('groups.recordPayBtn') }}
               </button>
             </div>
           </div>
@@ -123,8 +119,8 @@ const statusLabel: Record<string, string> = {
         <DoodleScene
           v-else
           seed="all-settled"
-          title="Không ai nợ ai trong nhóm này"
-          caption="Tất cả các khoản chi chung đã cân bằng."
+          :title="t('groups.allSettled')"
+          :caption="t('groups.directDebtsDesc')"
           sticker="tim"
         />
 
@@ -136,34 +132,34 @@ const statusLabel: Record<string, string> = {
         >
           <div class="flex items-center justify-between">
             <h3 class="font-extrabold text-base">
-              Ghi nhận: {{ store.user(activeDebt.fromId)?.name }} trả cho {{ store.user(activeDebt.toId)?.name }}
+              {{ t('groups.recordPayFromTo', { from: store.user(activeDebt.fromId)?.name, to: store.user(activeDebt.toId)?.name }) }}
             </h3>
             <button type="button" class="text-xs font-semibold underline cursor-pointer" @click="activeDebt = null">
-              Đóng
+              {{ t('common.close') }}
             </button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label for="s-amt" class="field-label">Số tiền trả (tối đa {{ vnd(activeDebt.remaining) }})</label>
+              <label for="s-amt" class="field-label">{{ t('common.amount') }} (max {{ vnd(activeDebt.remaining) }})</label>
               <input id="s-amt" v-model="payAmountInput" type="text" inputmode="numeric" class="field font-extrabold num" />
             </div>
             <div>
-              <label for="s-date" class="field-label">Ngày trả</label>
+              <label for="s-date" class="field-label">{{ t('common.date') }}</label>
               <input id="s-date" v-model="payDate" type="date" class="field num" />
             </div>
             <div>
-              <label for="s-note" class="field-label">Ghi chú</label>
-              <input id="s-note" v-model="payNote" type="text" class="field" placeholder="Chuyển khoản, tiền mặt..." />
+              <label for="s-note" class="field-label">{{ t('common.note') }}</label>
+              <input id="s-note" v-model="payNote" type="text" class="field" :placeholder="t('feedback.contentPlaceholder')" />
             </div>
           </div>
 
           <p v-if="payError" role="alert" class="field-error">{{ payError }}</p>
 
           <div class="flex items-center gap-2.5">
-            <button type="submit" class="btn btn-ink btn-sm">Lưu thanh toán</button>
+            <button type="submit" class="btn btn-ink btn-sm">{{ t('groups.savePayment') }}</button>
             <button type="button" class="btn btn-sm" @click="payAmountInput = String(Math.round(activeDebt.remaining / 2))">
-              Trả trước một nửa
+              {{ t('groups.payHalf') }}
             </button>
           </div>
         </form>
@@ -172,9 +168,9 @@ const statusLabel: Record<string, string> = {
       <!-- Right column: Member Paid vs Share breakdown -->
       <div class="panel p-6 flex flex-col gap-4">
         <div>
-          <h2 class="text-xl font-extrabold">Bảng đối chiếu Đã trả & Phải chịu</h2>
+          <h2 class="text-xl font-extrabold">{{ t('groups.paidVsShareTitle') }}</h2>
           <p class="text-xs text-ink-soft mt-0.5">
-            Tách bạch số tiền đã ứng ra và nghĩa vụ chi tiêu thực tế của từng thành viên.
+            {{ t('groups.paidVsShareDesc') }}
           </p>
         </div>
 
@@ -193,7 +189,7 @@ const statusLabel: Record<string, string> = {
               <div>
                 <div class="font-bold text-sm">{{ store.user(m.userId)?.name }}</div>
                 <div class="text-xs text-ink-soft num">
-                  Đã trả: {{ vnd(balances[m.userId]?.paid || 0) }} · Phải chịu: {{ vnd(balances[m.userId]?.share || 0) }}
+                  {{ t('reports.paidForGroup') }}: {{ vnd(balances[m.userId]?.paid || 0) }} · {{ t('reports.actualGroupShare') }}: {{ vnd(balances[m.userId]?.share || 0) }}
                 </div>
               </div>
             </div>
@@ -208,6 +204,7 @@ const statusLabel: Record<string, string> = {
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 

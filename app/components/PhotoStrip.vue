@@ -34,18 +34,19 @@ const frames = computed(() => props.slots.slice(0, 4).map(s => ({
 })))
 
 const extraCount = computed(() => Math.max(0, props.slots.length - 4))
+const { t } = useI18n()
 </script>
 
 <template>
   <button
     type="button"
-    class="developing group relative flex flex-col gap-2.5 bg-paper border-[3px] border-ink rounded-[6px] p-3 pb-4 text-left transition-transform duration-200 cursor-pointer"
+    class="developing group relative flex flex-col gap-2.5 bg-paper border-[3px] border-ink rounded-[6px] p-3 pb-4 text-left transition-transform duration-200 cursor-pointer shrink-0"
     :class="[
       selected ? 'outline-[6px] outline-pink shadow-[var(--shadow-lift)] z-10' : 'shadow-[var(--shadow-print)] hover:-translate-y-1',
       archived ? 'opacity-70 saturate-50' : '',
-      compact ? 'w-[152px]' : 'w-[172px]'
+      compact ? 'w-[152px] min-w-[152px]' : 'w-[172px] min-w-[172px]'
     ]"
-    :style="{ transform: `rotate(${tilt}deg)` }"
+    :style="{ transform: `rotate(${tilt}deg)`, width: compact ? '152px' : '172px', minWidth: compact ? '152px' : '172px' }"
     @click="emit('select')"
   >
     <div
@@ -78,7 +79,7 @@ const extraCount = computed(() => Math.max(0, props.slots.length - 4))
         {{ subcaption }}
       </div>
       <div v-if="extraCount > 0" class="mt-1 text-xs font-semibold text-ink-soft">
-        và {{ extraCount }} người nữa
+        {{ t('dashboard.andMore', { count: extraCount }) }}
       </div>
     </div>
   </button>

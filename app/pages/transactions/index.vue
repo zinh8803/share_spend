@@ -3,6 +3,7 @@ import { useAppStore } from '~/stores/app'
 import { vnd } from '~/utils/money'
 
 const store = useAppStore()
+const { t, tCategoryName, tPaymentMethod } = useI18n()
 const q = ref('')
 const monthFilter = ref('all')
 const typeFilter = ref<'all' | 'income' | 'expense'>('all')
@@ -37,40 +38,34 @@ const totals = computed(() => {
   }
   return { income, expense, balance: income - expense }
 })
-
-const methodLabel: Record<string, string> = {
-  cash: 'Tiền mặt',
-  transfer: 'Chuyển khoản',
-  other: 'Khác'
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-extrabold">Giao dịch cá nhân</h1>
+        <h1 class="text-3xl font-extrabold">{{ t('tx.title') }}</h1>
         <p class="text-sm text-ink-soft mt-1">
-          Ghi chép thu nhập và chi tiêu riêng của bạn. Chi phí nhóm được tách riêng để không tính trùng.
+          {{ t('tx.subtitle') }}
         </p>
       </div>
       <div class="flex flex-wrap gap-2.5">
-        <NuxtLink to="/categories" class="btn">Quản lý danh mục</NuxtLink>
-        <NuxtLink to="/transactions/new" class="btn btn-ink">Thêm thu chi</NuxtLink>
+        <NuxtLink to="/categories" class="btn">{{ t('tx.manageCategories') }}</NuxtLink>
+        <NuxtLink to="/transactions/new" class="btn btn-ink">{{ t('header.addTx') }}</NuxtLink>
       </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="panel p-4 bg-[var(--color-gain-bg)]">
-        <div class="text-xs font-semibold text-ink/75">Tổng thu theo bộ lọc</div>
+        <div class="text-xs font-semibold text-ink/75">{{ t('tx.filteredIncome') }}</div>
         <div class="text-2xl font-extrabold num mt-1 gain">{{ vnd(totals.income) }}</div>
       </div>
       <div class="panel p-4 bg-[var(--color-loss-bg)]">
-        <div class="text-xs font-semibold text-ink/75">Tổng chi theo bộ lọc</div>
+        <div class="text-xs font-semibold text-ink/75">{{ t('tx.filteredExpense') }}</div>
         <div class="text-2xl font-extrabold num mt-1 loss">{{ vnd(totals.expense) }}</div>
       </div>
       <div class="panel p-4 bg-butter">
-        <div class="text-xs font-semibold text-ink/75">Số dư (Thu − Chi)</div>
+        <div class="text-xs font-semibold text-ink/75">{{ t('tx.balance') }}</div>
         <div class="text-2xl font-extrabold num mt-1">{{ vnd(totals.balance) }}</div>
       </div>
     </div>
@@ -78,41 +73,41 @@ const methodLabel: Record<string, string> = {
     <div class="panel p-5 sm:p-6 flex flex-col gap-4">
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
         <div>
-          <label for="tx-search" class="field-label">Tìm theo nội dung hoặc ghi chú</label>
+          <label for="tx-search" class="field-label">{{ t('tx.searchLabel') }}</label>
           <input
             id="tx-search"
             v-model="q"
             type="search"
             class="field"
-            placeholder="Ví dụ: cà phê, lương, tiền điện..."
+            :placeholder="t('tx.searchPlaceholder')"
           />
         </div>
 
         <div>
-          <label for="tx-month" class="field-label">Tháng</label>
+          <label for="tx-month" class="field-label">{{ t('tx.month') }}</label>
           <select id="tx-month" v-model="monthFilter" class="field">
-            <option value="all">Tất cả các tháng</option>
+            <option value="all">{{ t('tx.allMonths') }}</option>
             <option v-for="m in monthChoices" :key="m" :value="m">
-              Tháng {{ m.slice(5, 7) }}/{{ m.slice(0, 4) }}
+              {{ t('dashboard.monthFormat', { m: m.slice(5, 7), y: m.slice(0, 4) }) }}
             </option>
           </select>
         </div>
 
         <div>
-          <label for="tx-type" class="field-label">Loại giao dịch</label>
+          <label for="tx-type" class="field-label">{{ t('tx.type') }}</label>
           <select id="tx-type" v-model="typeFilter" class="field">
-            <option value="all">Thu & Chi</option>
-            <option value="expense">Khoản chi</option>
-            <option value="income">Khoản thu</option>
+            <option value="all">{{ t('tx.allTypes') }}</option>
+            <option value="expense">{{ t('common.expense') }}</option>
+            <option value="income">{{ t('common.income') }}</option>
           </select>
         </div>
 
         <div>
-          <label for="tx-cat" class="field-label">Danh mục</label>
+          <label for="tx-cat" class="field-label">{{ t('tx.category') }}</label>
           <select id="tx-cat" v-model="categoryFilter" class="field">
-            <option value="all">Mọi danh mục</option>
+            <option value="all">{{ t('tx.allCategories') }}</option>
             <option v-for="c in store.categories" :key="c.id" :value="c.id">
-              {{ c.name }} ({{ c.kind === 'income' ? 'Thu' : 'Chi' }})
+              {{ tCategoryName(c) }} ({{ c.kind === 'income' ? t('common.income') : t('common.expense') }})
             </option>
           </select>
         </div>
@@ -122,58 +117,58 @@ const methodLabel: Record<string, string> = {
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="text-xs font-extrabold text-ink-soft border-b-2 border-ink">
-              <th class="py-2.5 pr-3">Nội dung</th>
-              <th class="py-2.5 px-3">Danh mục</th>
-              <th class="py-2.5 px-3">Phương thức</th>
-              <th class="py-2.5 px-3">Ngày</th>
-              <th class="py-2.5 px-3 text-right">Số tiền</th>
-              <th class="py-2.5 pl-3 text-right">Thao tác</th>
+              <th class="py-2.5 pr-3">{{ t('tx.thDescription') }}</th>
+              <th class="py-2.5 px-3">{{ t('tx.thCategory') }}</th>
+              <th class="py-2.5 px-3">{{ t('tx.thMethod') }}</th>
+              <th class="py-2.5 px-3">{{ t('common.date') }}</th>
+              <th class="py-2.5 px-3 text-right">{{ t('tx.thAmount') }}</th>
+              <th class="py-2.5 pl-3 text-right">{{ t('tx.thActions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="t in filtered"
-              :key="t.id"
+              v-for="tx in filtered"
+              :key="tx.id"
               class="row-line text-sm"
             >
               <td class="py-3 pr-3">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-[8px] border-2 border-ink bg-ground flex items-center justify-center shrink-0">
                     <img
-                      :src="`/stickers/${store.category(t.categoryId)?.sticker || 'khac'}.png`"
-                      :alt="store.category(t.categoryId)?.name || 'Danh mục'"
+                      :src="`/stickers/${store.category(tx.categoryId)?.sticker || 'khac'}.png`"
+                      :alt="tCategoryName(store.category(tx.categoryId))"
                       class="w-7 h-7 object-contain"
                     />
                   </div>
                   <div>
-                    <div class="font-bold text-ink">{{ t.description }}</div>
-                    <div v-if="t.note" class="hand text-base text-ink-soft">{{ t.note }}</div>
+                    <div class="font-bold text-ink">{{ tx.description }}</div>
+                    <div v-if="tx.note" class="hand text-base text-ink-soft">{{ tx.note }}</div>
                   </div>
                 </div>
               </td>
               <td class="py-3 px-3">
-                <span class="chip" :class="t.type === 'income' ? 'bg-[var(--color-gain-bg)]' : 'bg-ground'">
-                  {{ store.category(t.categoryId)?.name }}
+                <span class="chip" :class="tx.type === 'income' ? 'bg-[var(--color-gain-bg)]' : 'bg-ground'">
+                  {{ tCategoryName(store.category(tx.categoryId)) }}
                 </span>
               </td>
-              <td class="py-3 px-3 text-ink-soft">{{ methodLabel[t.method] }}</td>
-              <td class="py-3 px-3 num">{{ t.date }}</td>
+              <td class="py-3 px-3 text-ink-soft">{{ tPaymentMethod(tx.method) }}</td>
+              <td class="py-3 px-3 num">{{ tx.date }}</td>
               <td
                 class="py-3 px-3 text-right font-extrabold text-base num"
-                :class="t.type === 'income' ? 'gain' : 'loss'"
+                :class="tx.type === 'income' ? 'gain' : 'loss'"
               >
-                {{ vnd(t.type === 'income' ? t.amount : -t.amount, { sign: true }) }}
+                {{ vnd(tx.type === 'income' ? tx.amount : -tx.amount, { sign: true }) }}
               </td>
               <td class="py-3 pl-3 text-right whitespace-nowrap">
-                <NuxtLink :to="`/transactions/new?edit=${t.id}`" class="text-xs font-semibold underline mr-3">
-                  Sửa
+                <NuxtLink :to="`/transactions/new?edit=${tx.id}`" class="text-xs font-semibold underline mr-3">
+                  {{ t('common.edit') }}
                 </NuxtLink>
                 <button
                   type="button"
                   class="text-xs font-semibold underline loss cursor-pointer"
-                  @click="store.deleteTransaction(t.id)"
+                  @click="store.deleteTransaction(tx.id)"
                 >
-                  Xóa
+                  {{ t('common.delete') }}
                 </button>
               </td>
             </tr>
@@ -184,11 +179,11 @@ const methodLabel: Record<string, string> = {
       <DoodleScene
         v-else
         seed="empty-transactions"
-        title="Không có giao dịch nào khớp bộ lọc"
-        caption="Thử xóa từ khóa tìm kiếm hoặc ghi nhận một khoản thu chi mới."
+        :title="t('tx.emptyTitle')"
+        :caption="t('tx.emptyCaption')"
         sticker="ca-phe"
       >
-        <NuxtLink to="/transactions/new" class="btn btn-ink">Thêm giao dịch đầu tiên</NuxtLink>
+        <NuxtLink to="/transactions/new" class="btn btn-ink">{{ t('tx.addFirst') }}</NuxtLink>
       </DoodleScene>
     </div>
   </div>

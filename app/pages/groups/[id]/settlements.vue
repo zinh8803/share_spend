@@ -4,6 +4,7 @@ import { parseVnd, vnd } from '~/utils/money'
 
 const route = useRoute()
 const store = useAppStore()
+const { t, tSettlementStatus } = useI18n()
 const groupId = computed(() => String(route.params.id))
 const group = computed(() => store.group(groupId.value))
 
@@ -28,10 +29,10 @@ watch([members, () => store.meId], ([curMembers, meId]) => {
   }
 }, { immediate: true })
 
-const statusInfo: Record<string, { label: string; cls: string }> = {
-  pending: { label: 'Pending · Chờ người nhận xác nhận', cls: 'bg-butter' },
-  confirmed: { label: 'Paid · Đã xác nhận', cls: 'bg-[var(--color-gain-bg)]' },
-  cancelled: { label: 'Cancelled · Đã hủy', cls: 'bg-[var(--color-loss-bg)]' }
+const statusCls: Record<string, string> = {
+  pending: 'bg-butter',
+  confirmed: 'bg-[var(--color-gain-bg)]',
+  cancelled: 'bg-[var(--color-loss-bg)]'
 }
 
 async function submit() {
@@ -59,12 +60,13 @@ async function submit() {
 </script>
 
 <template>
-  <div v-if="group">
+  <div class="group-page">
+    <div v-if="group">
     <GroupHeader :group-id="groupId" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-7 items-start">
       <div class="panel p-6 flex flex-col gap-4">
-        <h2 class="text-xl font-extrabold">Lịch sử hoàn trả trong nhóm ({{ settlements.length }})</h2>
+        <h2 class="text-xl font-extrabold">{{ t('groups.settlementHistoryTitle', { count: settlements.length }) }}</h2>
 
         <div v-if="settlements.length" class="flex flex-col">
           <div
@@ -82,12 +84,12 @@ async function submit() {
               <div>
                 <div class="text-sm">
                   <strong class="font-extrabold">{{ store.user(s.fromId)?.name }}</strong>
-                  hoàn trả cho
+                  {{ t('groups.settledTo') }}
                   <strong class="font-extrabold">{{ store.user(s.toId)?.name }}</strong>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 mt-1">
-                  <span class="chip text-xs" :class="statusInfo[s.status].cls">
-                    {{ statusInfo[s.status].label }}
+                  <span class="chip text-xs" :class="statusCls[s.status]">
+                    {{ tSettlementStatus(s.status) }}
                   </span>
                   <span class="text-xs text-ink-soft num">{{ s.date }}</span>
                   <span v-if="s.note" class="hand text-base text-ink-soft">· {{ s.note }}</span>
@@ -103,14 +105,14 @@ async function submit() {
                   class="btn btn-sm bg-[var(--color-gain-bg)]"
                   @click="store.confirmSettlement(s.id)"
                 >
-                  Xác nhận đã nhận
+                  {{ t('groups.confirmReceived') }}
                 </button>
                 <button
                   type="button"
                   class="text-xs font-semibold underline loss cursor-pointer"
                   @click="store.cancelSettlement(s.id)"
                 >
-                  Hủy
+                  {{ t('common.cancel') }}
                 </button>
               </template>
             </div>
@@ -120,8 +122,8 @@ async function submit() {
         <DoodleScene
           v-else
           seed="no-settlements"
-          title="Chưa có giao dịch hoàn trả nào"
-          caption="Ghi nhận khi thành viên chuyển khoản hoặc đưa tiền mặt để hệ thống khấu trừ công nợ."
+          :title="t('groups.noExpensesYet')"
+          :caption="t('groups.manualSettlementDesc')"
           sticker="tien"
         />
       </div>
@@ -133,9 +135,9 @@ async function submit() {
       >
         <div class="flex items-center justify-between gap-3">
           <div>
-            <h2 class="text-xl font-extrabold">Ghi nhận thanh toán thủ công</h2>
+            <h2 class="text-xl font-extrabold">{{ t('groups.manualSettlementTitle') }}</h2>
             <p class="text-xs text-ink-soft mt-0.5">
-              Nếu bạn là người nhận, khoản trả sẽ được xác nhận ngay.
+              {{ t('groups.manualSettlementDesc') }}
             </p>
           </div>
           <img src="/stickers/tien.png" alt="Thanh toán" class="w-11 h-11 object-contain" />
@@ -143,7 +145,7 @@ async function submit() {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label for="st-from" class="field-label">Người trả nợ</label>
+            <label for="st-from" class="field-label">{{ t('groups.debtor') }}</label>
             <select id="st-from" v-model="fromId" class="field font-bold">
               <option v-for="m in members" :key="m.userId" :value="m.userId">
                 {{ store.user(m.userId)?.name }}
@@ -151,7 +153,7 @@ async function submit() {
             </select>
           </div>
           <div>
-            <label for="st-to" class="field-label">Người nhận tiền</label>
+            <label for="st-to" class="field-label">{{ t('groups.creditor') }}</label>
             <select id="st-to" v-model="toId" class="field font-bold">
               <option v-for="m in members" :key="m.userId" :value="m.userId">
                 {{ store.user(m.userId)?.name }}
@@ -162,25 +164,26 @@ async function submit() {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label for="st-amt" class="field-label">Số tiền (VND)</label>
+            <label for="st-amt" class="field-label">{{ t('common.amount') }} (VND)</label>
             <input id="st-amt" v-model="amountInput" type="text" inputmode="numeric" class="field font-extrabold num" placeholder="125000 hoặc 125k" />
           </div>
           <div>
-            <label for="st-date" class="field-label">Ngày thanh toán</label>
+            <label for="st-date" class="field-label">{{ t('common.date') }}</label>
             <input id="st-date" v-model="date" type="date" class="field num" />
           </div>
         </div>
 
         <div>
-          <label for="st-note" class="field-label">Ghi chú</label>
-          <input id="st-note" v-model="note" type="text" class="field" placeholder="Chuyển khoản Vietcombank, Momo..." />
+          <label for="st-note" class="field-label">{{ t('common.note') }}</label>
+          <input id="st-note" v-model="note" type="text" class="field" :placeholder="t('feedback.contentPlaceholder')" />
         </div>
 
         <p v-if="error" role="alert" class="field-error">{{ error }}</p>
 
-        <button type="submit" class="btn btn-ink self-start">Lưu giao dịch hoàn trả</button>
+        <button type="submit" class="btn btn-ink self-start">{{ t('groups.saveSettlementBtn') }}</button>
       </form>
     </div>
+  </div>
   </div>
 </template>
 

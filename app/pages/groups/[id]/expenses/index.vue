@@ -4,6 +4,7 @@ import { vnd } from '~/utils/money'
 
 const route = useRoute()
 const store = useAppStore()
+const { t, tSplitType } = useI18n()
 const groupId = computed(() => String(route.params.id))
 const group = computed(() => store.group(groupId.value))
 
@@ -13,24 +14,18 @@ const expenses = computed(() =>
     !q.value.trim() || e.title.toLowerCase().includes(q.value.trim().toLowerCase())
   )
 )
-
-const splitName: Record<string, string> = {
-  equal: 'Chia đều',
-  exact: 'Số tiền tùy chỉnh',
-  percent: 'Theo tỷ lệ %',
-  shares: 'Theo trọng số (phần)'
-}
 </script>
 
 <template>
-  <div v-if="group">
+  <div class="group-page">
+    <div v-if="group">
     <GroupHeader :group-id="groupId" />
 
     <div class="panel p-6 flex flex-col gap-5">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex-1 min-w-[240px] max-w-md">
-          <label for="exp-q" class="field-label">Tìm khoản chi trong nhóm</label>
-          <input id="exp-q" v-model="q" type="search" class="field" placeholder="Gõ tên hóa đơn..." />
+          <label for="exp-q" class="field-label">{{ t('groups.searchExpense') }}</label>
+          <input id="exp-q" v-model="q" type="search" class="field" :placeholder="t('common.search')" />
         </div>
 
         <NuxtLink
@@ -38,7 +33,7 @@ const splitName: Record<string, string> = {
           :to="`/groups/${groupId}/expenses/new`"
           class="btn btn-ink"
         >
-          Thêm khoản chi chung
+          {{ t('groups.addSharedExpense') }}
         </NuxtLink>
       </div>
 
@@ -61,7 +56,7 @@ const splitName: Record<string, string> = {
                 {{ e.title }}
               </NuxtLink>
               <div class="text-xs text-ink-soft mt-0.5">
-                <strong class="text-ink">{{ store.user(e.payerId)?.name }}</strong> đã thanh toán · {{ splitName[e.splitType] }} · {{ e.date }}
+                <strong class="text-ink">{{ store.user(e.payerId)?.name }}</strong> {{ t('groups.hasPaid') }} · {{ tSplitType(e.splitType) }} · {{ e.date }}
               </div>
             </div>
           </div>
@@ -81,7 +76,7 @@ const splitName: Record<string, string> = {
             <div class="text-right">
               <div class="font-extrabold text-lg num">{{ vnd(e.total) }}</div>
               <NuxtLink :to="`/groups/${groupId}/expenses/${e.id}`" class="text-xs font-semibold underline">
-                Chi tiết & sửa
+                {{ t('groups.detailAndEdit') }}
               </NuxtLink>
             </div>
           </div>
@@ -91,8 +86,8 @@ const splitName: Record<string, string> = {
       <DoodleScene
         v-else
         seed="no-group-expenses"
-        title="Chưa có khoản chi chung nào"
-        caption="Tạo khoản chi đầu tiên để hệ thống tự chia tiền và cập nhật công nợ."
+        :title="t('groups.noExpensesYet')"
+        :caption="t('groups.subtitle')"
         sticker="hoa-don"
       >
         <NuxtLink
@@ -100,10 +95,11 @@ const splitName: Record<string, string> = {
           :to="`/groups/${groupId}/expenses/new`"
           class="btn btn-ink"
         >
-          Tạo khoản chi đầu tiên
+          {{ t('groups.createFirstExpense') }}
         </NuxtLink>
       </DoodleScene>
     </div>
+  </div>
   </div>
 </template>
 

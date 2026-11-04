@@ -5,18 +5,12 @@ import { vnd, vndShort } from '~/utils/money'
 const route = useRoute()
 const router = useRouter()
 const store = useAppStore()
+const { t, tCategoryName, tSplitType } = useI18n()
 
 const groupId = computed(() => String(route.params.id))
 const expenseId = computed(() => String(route.params.expenseId))
 const group = computed(() => store.group(groupId.value))
 const expense = computed(() => store.expenses.find(e => e.id === expenseId.value))
-
-const splitName: Record<string, string> = {
-  equal: 'Chia đều (Equal Split)',
-  exact: 'Chia số tiền tùy chỉnh (Exact Amount)',
-  percent: 'Chia theo tỷ lệ % (Percentage Split)',
-  shares: 'Chia theo trọng số (Shares Split)'
-}
 
 const payerShare = computed(() =>
   expense.value?.splits.find(s => s.userId === expense.value?.payerId)?.share ?? 0
@@ -46,7 +40,8 @@ async function handleDelete() {
 </script>
 
 <template>
-  <div v-if="group && expense">
+  <div class="group-page">
+    <div v-if="group && expense">
     <GroupHeader :group-id="groupId" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 items-start">
@@ -69,40 +64,40 @@ async function handleDelete() {
               />
             </div>
             <div>
-              <span class="chip bg-ground">{{ store.category(expense.categoryId)?.name }} · {{ expense.date }}</span>
+              <span class="chip bg-ground">{{ tCategoryName(store.category(expense.categoryId)) }} · {{ expense.date }}</span>
               <h2 class="text-2xl sm:text-3xl font-extrabold mt-1">{{ expense.title }}</h2>
-              <p class="text-sm text-ink-soft mt-0.5">{{ splitName[expense.splitType] }}</p>
+              <p class="text-sm text-ink-soft mt-0.5">{{ tSplitType(expense.splitType) }}</p>
             </div>
           </div>
 
           <div class="text-right">
-            <div class="text-xs font-semibold text-ink-soft">Tổng hóa đơn</div>
+            <div class="text-xs font-semibold text-ink-soft">{{ t('groups.billTotal') }}</div>
             <div class="text-3xl font-extrabold num">{{ vnd(expense.total) }}</div>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="rounded-[14px] border-2 border-ink bg-butter p-4">
-            <div class="text-xs font-semibold text-ink/75">Người thanh toán hóa đơn</div>
+            <div class="text-xs font-semibold text-ink/75">{{ t('groups.billPayer') }}</div>
             <div class="text-lg font-extrabold mt-1">
-              {{ store.user(expense.payerId)?.name }} đã trả {{ vnd(expense.total) }}
+              {{ store.user(expense.payerId)?.name }} {{ t('groups.hasPaidAmount', { amount: vnd(expense.total) }) }}
             </div>
             <div class="text-xs text-ink-soft mt-0.5">
-              Phần chịu thực tế: {{ vnd(payerShare) }}
+              {{ t('groups.actualShare') }}: {{ vnd(payerShare) }}
             </div>
           </div>
 
           <div class="rounded-[14px] border-2 border-ink bg-[var(--color-gain-bg)] p-4">
-            <div class="text-xs font-semibold text-ink/75">{{ store.user(expense.payerId)?.name }} cần nhận lại</div>
+            <div class="text-xs font-semibold text-ink/75">{{ store.user(expense.payerId)?.name }} {{ t('groups.needsToReceive') }}</div>
             <div class="text-2xl font-extrabold num mt-1 gain">+{{ vnd(payerReceivable) }}</div>
             <div class="text-xs text-ink-soft mt-0.5">
-              Từ {{ expense.splits.filter(s => s.userId !== expense.payerId).length }} thành viên còn lại
+              {{ t('groups.fromRemainingMembers', { count: expense.splits.filter(s => s.userId !== expense.payerId).length }) }}
             </div>
           </div>
         </div>
 
         <div>
-          <h3 class="text-base font-extrabold mb-2">Chi tiết phân bổ từng thành viên</h3>
+          <h3 class="text-base font-extrabold mb-2">{{ t('groups.breakdownByMember') }}</h3>
           <div class="flex flex-col">
             <div
               v-for="sp in expense.splits"
@@ -119,10 +114,10 @@ async function handleDelete() {
                   <div class="font-extrabold text-base">{{ store.user(sp.userId)?.name }}</div>
                   <div class="text-xs text-ink-soft">
                     <template v-if="sp.userId === expense.payerId">
-                      Đã trả {{ vnd(expense.total) }} · Phần chịu {{ vnd(sp.share) }}
+                      {{ store.user(sp.userId)?.name }} {{ t('groups.hasPaidAmount', { amount: vnd(expense.total) }) }} · {{ t('groups.actualShare') }} {{ vnd(sp.share) }}
                     </template>
                     <template v-else>
-                      Cần hoàn trả cho {{ store.user(expense.payerId)?.name }}
+                      {{ t('groups.needsToPay') }} {{ store.user(expense.payerId)?.name }}
                     </template>
                   </div>
                 </div>
@@ -144,35 +139,36 @@ async function handleDelete() {
         </div>
 
         <p v-if="expense.note" class="hand text-xl text-ink-soft">
-          Ghi chú: {{ expense.note }}
+          {{ t('common.note') }}: {{ expense.note }}
         </p>
 
         <div v-if="group.status === 'active' && expense.status === 'active'" class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t-2 border-dashed border-line">
           <div class="flex flex-wrap gap-2.5">
             <NuxtLink :to="`/groups/${groupId}/expenses/new?edit=${expense.id}`" class="btn bg-lilac">
-              Sửa hóa đơn & tính lại
+              {{ t('groups.editAndRecalculate') }}
             </NuxtLink>
             <NuxtLink :to="`/groups/${groupId}/balances`" class="btn">
-              Mở bảng công nợ
+              {{ t('groups.openDebtTable') }}
             </NuxtLink>
           </div>
-          <button type="button" class="btn btn-sm loss" @click="handleDelete">
-            Xóa khoản chi này
+          <button type="button" class="btn btn-sm loss cursor-pointer" @click="handleDelete">
+            {{ t('groups.deleteThisExpense') }}
           </button>
         </div>
       </div>
     </div>
   </div>
   <div v-else-if="!store.hydrated && store.loading" class="panel p-8 text-center">
-    <p class="font-extrabold text-lg">Đang tải chi tiết hóa đơn...</p>
+    <p class="font-extrabold text-lg">{{ t('common.loading') }}</p>
   </div>
   <DoodleScene
     v-else
     seed="missing-expense"
-    title="Không tìm thấy hóa đơn"
-    caption="Khoản chi này đã bị xóa hoặc không tồn tại."
+    :title="t('groups.noExpensesYet')"
+    caption="..."
   >
-    <NuxtLink :to="`/groups/${groupId}/expenses`" class="btn btn-ink">Về danh sách chi phí</NuxtLink>
+    <NuxtLink :to="`/groups/${groupId}/expenses`" class="btn btn-ink">{{ t('common.back') }}</NuxtLink>
   </DoodleScene>
+  </div>
 </template>
 

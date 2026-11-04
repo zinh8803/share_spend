@@ -5,6 +5,7 @@ import { parseVnd, vnd } from '~/utils/money'
 const store = useAppStore()
 const route = useRoute()
 const router = useRouter()
+const { t, tCategoryName, tPaymentMethod } = useI18n()
 
 const editId = computed(() => (typeof route.query.edit === 'string' ? route.query.edit : undefined))
 const existing = computed(() => (editId.value ? store.transactions.find(t => t.id === editId.value) : undefined))
@@ -43,15 +44,15 @@ watch(type, (newType) => {
 const parsedAmount = computed(() => parseVnd(amountInput.value))
 const selectedCategory = computed(() => store.category(categoryId.value))
 
-const quickPresets = [
-  { label: 'Ăn sáng 30k', amount: '30000', desc: 'Ăn sáng', cat: 'c-food', type: 'expense' as TxType },
-  { label: 'Cơm trưa 50k', amount: '50000', desc: 'Ăn trưa văn phòng', cat: 'c-food', type: 'expense' as TxType },
-  { label: 'Đổ xăng 100k', amount: '100000', desc: 'Đổ xăng xe máy', cat: 'c-move', type: 'expense' as TxType },
-  { label: 'Mua sắm 500k', amount: '500000', desc: 'Mua đồ cá nhân', cat: 'c-shop', type: 'expense' as TxType },
-  { label: 'Lương 12tr', amount: '12000000', desc: 'Tiền lương tháng', cat: 'c-salary', type: 'income' as TxType }
-]
+const quickPresets = computed(() => [
+  { label: t('nav.transactions') === 'Transactions' ? 'Breakfast 30k' : 'Ăn sáng 30k', amount: '30000', desc: t('nav.transactions') === 'Transactions' ? 'Breakfast' : 'Ăn sáng', cat: 'c-food', type: 'expense' as TxType },
+  { label: t('nav.transactions') === 'Transactions' ? 'Lunch 50k' : 'Cơm trưa 50k', amount: '50000', desc: t('nav.transactions') === 'Transactions' ? 'Office lunch' : 'Ăn trưa văn phòng', cat: 'c-food', type: 'expense' as TxType },
+  { label: t('nav.transactions') === 'Transactions' ? 'Gas 100k' : 'Đổ xăng 100k', amount: '100000', desc: t('nav.transactions') === 'Transactions' ? 'Motorbike gas' : 'Đổ xăng xe máy', cat: 'c-move', type: 'expense' as TxType },
+  { label: t('nav.transactions') === 'Transactions' ? 'Shopping 500k' : 'Mua sắm 500k', amount: '500000', desc: t('nav.transactions') === 'Transactions' ? 'Shopping' : 'Mua đồ cá nhân', cat: 'c-shop', type: 'expense' as TxType },
+  { label: t('nav.transactions') === 'Transactions' ? 'Salary 12M' : 'Lương 12tr', amount: '12000000', desc: t('nav.transactions') === 'Transactions' ? 'Monthly salary' : 'Tiền lương tháng', cat: 'c-salary', type: 'income' as TxType }
+])
 
-function applyPreset(p: typeof quickPresets[number]) {
+function applyPreset(p: { label: string; amount: string; desc: string; cat: string; type: TxType }) {
   type.value = p.type
   amountInput.value = p.amount
   description.value = p.desc
@@ -61,15 +62,21 @@ function applyPreset(p: typeof quickPresets[number]) {
 async function submit() {
   error.value = ''
   if (parsedAmount.value <= 0) {
-    error.value = 'Nhập số tiền lớn hơn 0 (có thể gõ nhanh như 35k hoặc 1,2tr).'
+    error.value = t('nav.transactions') === 'Transactions'
+      ? 'Enter an amount greater than 0 (e.g. 35k or 1.2M).'
+      : 'Nhập số tiền lớn hơn 0 (có thể gõ nhanh như 35k hoặc 1,2tr).'
     return
   }
   if (parsedAmount.value > 100_000_000_000) {
-    error.value = 'Số tiền tối đa cho một giao dịch là 100 tỷ đồng (100.000.000.000đ).'
+    error.value = t('nav.transactions') === 'Transactions'
+      ? 'Maximum transaction amount is 100 billion VND.'
+      : 'Số tiền tối đa cho một giao dịch là 100 tỷ đồng (100.000.000.000đ).'
     return
   }
   if (!description.value.trim()) {
-    error.value = 'Nhập nội dung giao dịch để dễ tra cứu lại sau này.'
+    error.value = t('nav.transactions') === 'Transactions'
+      ? 'Please enter a description for this transaction.'
+      : 'Nhập nội dung giao dịch để dễ tra cứu lại sau này.'
     return
   }
   await store.saveTransaction({
@@ -91,25 +98,25 @@ async function submit() {
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <NuxtLink to="/transactions" class="text-sm font-semibold underline text-ink-soft hover:text-ink">
-          Quay lại danh sách giao dịch
+          {{ t('tx.backToList') }}
         </NuxtLink>
         <h1 class="text-3xl font-extrabold mt-1">
-          {{ editId ? 'Chỉnh sửa giao dịch cá nhân' : 'Thêm giao dịch cá nhân' }}
+          {{ editId ? t('tx.editTitle') : t('tx.newTitle') }}
         </h1>
       </div>
       <div v-if="selectedCategory" class="w-16 h-16 rounded-[12px] border-[3px] border-ink bg-butter flex items-center justify-center">
-        <img :src="`/stickers/${selectedCategory.sticker}.png`" :alt="selectedCategory.name" class="w-12 h-12 object-contain" />
+        <img :src="`/stickers/${selectedCategory.sticker}.png`" :alt="tCategoryName(selectedCategory)" class="w-12 h-12 object-contain" />
       </div>
     </div>
 
     <div class="panel p-6 sm:p-8 flex flex-col gap-5">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="seg" role="group" aria-label="Loại giao dịch">
+        <div class="seg" role="group" :aria-label="t('tx.type')">
           <button type="button" :aria-pressed="type === 'expense'" @click="type = 'expense'">
-            Khoản chi (Expense)
+            {{ t('common.expense') }}
           </button>
           <button type="button" :aria-pressed="type === 'income'" @click="type = 'income'">
-            Khoản thu (Income)
+            {{ t('common.income') }}
           </button>
         </div>
 
@@ -129,28 +136,28 @@ async function submit() {
       <form class="flex flex-col gap-4" @submit.prevent="submit">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="tx-amount" class="field-label">Số tiền (VND)</label>
+            <label for="tx-amount" class="field-label">{{ t('tx.amountLabel') }}</label>
             <input
               id="tx-amount"
               v-model="amountInput"
               type="text"
               inputmode="numeric"
               class="field font-extrabold text-lg num"
-              placeholder="Ví dụ: 50000 hoặc 50k"
+              placeholder="50000, 50k, 1.2tr..."
             />
             <div v-if="parsedAmount > 0" class="hand text-lg text-lilac-deep mt-1">
-              Sẽ ghi nhận: {{ vnd(parsedAmount) }}
+              {{ t('tx.willRecord', { amount: vnd(parsedAmount) }) }}
             </div>
           </div>
 
           <div>
-            <label for="tx-date" class="field-label">Ngày giao dịch</label>
+            <label for="tx-date" class="field-label">{{ t('common.date') }}</label>
             <input id="tx-date" v-model="date" type="date" class="field num" />
           </div>
         </div>
 
         <div>
-          <label class="field-label">Danh mục</label>
+          <label class="field-label">{{ t('tx.category') }}</label>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <button
               v-for="c in availableCategories"
@@ -160,42 +167,42 @@ async function submit() {
               :class="categoryId === c.id ? 'bg-lilac outline-4 outline-pink -translate-y-0.5' : 'bg-paper hover:bg-ground'"
               @click="categoryId = c.id"
             >
-              <img :src="`/stickers/${c.sticker}.png`" :alt="c.name" class="w-10 h-10 object-contain" />
-              <span class="text-sm font-bold">{{ c.name }}</span>
+              <img :src="`/stickers/${c.sticker}.png`" :alt="tCategoryName(c)" class="w-10 h-10 object-contain" />
+              <span class="text-sm font-bold">{{ tCategoryName(c) }}</span>
             </button>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="tx-desc" class="field-label">Nội dung</label>
+            <label for="tx-desc" class="field-label">{{ t('tx.descLabel') }}</label>
             <input
               id="tx-desc"
               v-model="description"
               type="text"
               class="field"
-              placeholder="Ví dụ: Cà phê muối, Lương tháng 10..."
+              :placeholder="t('tx.descPlaceholder')"
             />
           </div>
 
           <div>
-            <label for="tx-method" class="field-label">Phương thức thanh toán</label>
+            <label for="tx-method" class="field-label">{{ t('tx.method') }}</label>
             <select id="tx-method" v-model="method" class="field">
-              <option value="transfer">Chuyển khoản</option>
-              <option value="cash">Tiền mặt</option>
-              <option value="other">Khác</option>
+              <option value="transfer">{{ tPaymentMethod('transfer') }}</option>
+              <option value="cash">{{ tPaymentMethod('cash') }}</option>
+              <option value="other">{{ tPaymentMethod('other') }}</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label for="tx-note" class="field-label">Ghi chú (tùy chọn)</label>
+          <label for="tx-note" class="field-label">{{ t('tx.noteLabel') }}</label>
           <input
             id="tx-note"
             v-model="note"
             type="text"
             class="field"
-            placeholder="Thêm ghi chú hoặc thông tin hóa đơn..."
+            :placeholder="t('feedback.contentPlaceholder')"
           />
         </div>
 
@@ -203,9 +210,9 @@ async function submit() {
 
         <div class="flex flex-wrap items-center gap-3 pt-2">
           <button type="submit" class="btn btn-ink">
-            {{ editId ? 'Lưu thay đổi' : 'Lưu giao dịch' }}
+            {{ editId ? t('common.saveChanges') : t('tx.saveBtn') }}
           </button>
-          <NuxtLink to="/transactions" class="btn">Hủy</NuxtLink>
+          <NuxtLink to="/transactions" class="btn">{{ t('common.cancel') }}</NuxtLink>
         </div>
       </form>
     </div>

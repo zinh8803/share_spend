@@ -4,6 +4,7 @@ import { vndShort } from '~/utils/money'
 
 const store = useAppStore()
 const router = useRouter()
+const { t, tGroupType } = useI18n()
 
 const statusFilter = ref<'active' | 'archived' | 'all'>('active')
 const name = ref('')
@@ -61,17 +62,10 @@ const strips = computed(() =>
         }
       }),
       caption: g.name,
-      subcaption: exps.length ? `${exps.length} khoản · ${vndShort(total)}` : 'Chưa có chi phí'
+      subcaption: exps.length ? t('dashboard.itemCount', { count: exps.length, total: vndShort(total) }) : t('groups.noExpensesYet')
     }
   })
 )
-
-const typeLabels: Record<GroupType, string> = {
-  friends: 'Nhóm bạn',
-  family: 'Gia đình',
-  company: 'Công ty / Team',
-  other: 'Thuê nhà / Khác'
-}
 
 async function handleCreate() {
   createError.value = ''
@@ -106,21 +100,21 @@ async function handleJoin() {
   <div class="flex flex-col gap-8">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-extrabold">Nhóm chi tiêu chung</h1>
+        <h1 class="text-3xl font-extrabold text-ink">{{ t('groups.title') }}</h1>
         <p class="text-sm text-ink-soft mt-1">
-          Mỗi nhóm hoạt động độc lập về thành viên, khoản chi và công nợ. Nhấn vào dải ảnh để mở nhóm.
+          {{ t('groups.subtitle') }}
         </p>
       </div>
 
-      <div class="seg" role="group" aria-label="Trạng thái nhóm">
+      <div class="seg" role="group" :aria-label="t('common.status')">
         <button type="button" :aria-pressed="statusFilter === 'active'" @click="statusFilter = 'active'">
-          Đang hoạt động
+          {{ t('groups.activeFilter') }}
         </button>
         <button type="button" :aria-pressed="statusFilter === 'archived'" @click="statusFilter = 'archived'">
-          Đã lưu trữ
+          {{ t('groups.archivedFilter') }}
         </button>
         <button type="button" :aria-pressed="statusFilter === 'all'" @click="statusFilter = 'all'">
-          Tất cả
+          {{ t('common.all') }}
         </button>
       </div>
     </div>
@@ -138,14 +132,14 @@ async function handleJoin() {
               @select="router.push(`/groups/${item.group.id}`)"
             />
             <div class="flex items-center gap-1.5 flex-wrap justify-center">
-              <span class="chip text-xs">{{ typeLabels[item.group.type] }} · {{ item.group.inviteCode }}</span>
+              <span class="chip text-xs">{{ tGroupType(item.group.type) }} · {{ item.group.inviteCode }}</span>
               <button
                 type="button"
                 class="chip text-xs hover:bg-lilac cursor-pointer transition-colors"
                 title="Sao chép hoặc gửi link mời"
                 @click.stop="shareGroupLink(item.group)"
               >
-                {{ copiedGroupId === item.group.id ? 'Đã sao chép link' : 'Chia sẻ link' }}
+                {{ copiedGroupId === item.group.id ? t('groups.copiedLink') : t('groups.shareLink') }}
               </button>
             </div>
           </div>
@@ -153,8 +147,8 @@ async function handleJoin() {
         <DoodleScene
           v-else
           seed="no-groups"
-          title="Chưa có nhóm nào ở trạng thái này"
-          caption="Tạo một nhóm mới bên phải hoặc chuyển bộ lọc sang Đang hoạt động."
+          :title="t('groups.noGroups')"
+          :caption="t('dashboard.emptyGroupDesc')"
           sticker="du-lich"
         />
       </div>
@@ -162,60 +156,60 @@ async function handleJoin() {
       <div class="flex flex-col gap-6">
         <form class="panel p-6 flex flex-col gap-4" @submit.prevent="handleCreate">
           <div class="flex items-center justify-between gap-3">
-            <h2 class="text-xl font-extrabold">Tạo nhóm mới</h2>
+            <h2 class="text-xl font-extrabold">{{ t('groups.createNewTitle') }}</h2>
             <img src="/stickers/du-lich.png" alt="Du lịch" class="w-10 h-10 object-contain" />
           </div>
 
           <div>
-            <label for="g-name" class="field-label">Tên nhóm</label>
+            <label for="g-name" class="field-label">{{ t('groups.nameLabel') }}</label>
             <input
               id="g-name"
               v-model="name"
               type="text"
               class="field"
-              placeholder="Ví dụ: Đi Phú Quốc, Quỹ liên hoan..."
+              placeholder="e.g. Phu Quoc Trip..."
             />
           </div>
 
           <div>
-            <label for="g-type" class="field-label">Loại nhóm</label>
+            <label for="g-type" class="field-label">{{ t('groups.typeLabel') }}</label>
             <select id="g-type" v-model="type" class="field">
-              <option value="friends">Nhóm bạn / Du lịch</option>
-              <option value="family">Gia đình</option>
-              <option value="company">Công ty / Nhóm làm việc</option>
-              <option value="other">Nhóm thuê nhà / Khác</option>
+              <option value="friends">{{ tGroupType('friends') }}</option>
+              <option value="family">{{ tGroupType('family') }}</option>
+              <option value="company">{{ tGroupType('company') }}</option>
+              <option value="other">{{ tGroupType('other') }}</option>
             </select>
           </div>
 
           <div>
-            <label for="g-desc" class="field-label">Mô tả ngắn</label>
+            <label for="g-desc" class="field-label">{{ t('groups.descLabel') }}</label>
             <input
               id="g-desc"
               v-model="description"
               type="text"
               class="field"
-              placeholder="Ghi chú mục đích nhóm..."
+              placeholder="..."
             />
           </div>
 
           <p v-if="createError" role="alert" class="field-error">{{ createError }}</p>
 
-          <button type="submit" class="btn btn-ink self-start">Tạo nhóm & nhận mã mời</button>
+          <button type="submit" class="btn btn-ink self-start">{{ t('groups.createAndGetCode') }}</button>
         </form>
 
         <form class="panel p-6 flex flex-col gap-4" @submit.prevent="handleJoin">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <h2 class="text-xl font-extrabold">Tham gia nhóm bằng mã mời</h2>
+              <h2 class="text-xl font-extrabold">{{ t('groups.joinTitle') }}</h2>
               <p class="text-xs text-ink-soft mt-0.5">
-                Nhập mã mời do chủ nhóm chia sẻ để tham gia vào nhóm.
+                {{ t('groups.joinDesc') }}
               </p>
             </div>
             <img src="/stickers/phong-bi.png" alt="Thư mời" class="w-10 h-10 object-contain" />
           </div>
 
           <div>
-            <label for="join-code" class="field-label">Mã mời</label>
+            <label for="join-code" class="field-label">{{ t('groups.inviteCodeLabel') }}</label>
             <input
               id="join-code"
               v-model="inviteCode"
@@ -233,7 +227,7 @@ async function handleJoin() {
             {{ joinFeedback.text }}
           </p>
 
-          <button type="submit" class="btn bg-butter self-start">Tham gia nhóm</button>
+          <button type="submit" class="btn bg-butter self-start">{{ t('groups.joinBtn') }}</button>
         </form>
       </div>
     </div>

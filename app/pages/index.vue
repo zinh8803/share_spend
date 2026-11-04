@@ -3,6 +3,7 @@ import { useAppStore, todayIso } from '~/stores/app'
 import { vnd, vndShort } from '~/utils/money'
 
 const store = useAppStore()
+const { t, tCategoryName, tActivity, tGroupDesc } = useI18n()
 const currentYm = todayIso().slice(0, 7)
 const month = ref(currentYm)
 const selectedGroupId = ref('')
@@ -40,7 +41,7 @@ const groupStrips = computed(() =>
         }
       }),
       caption: g.name,
-      subcaption: expCount > 0 ? `${expCount} khoản · ${vndShort(total)}` : 'Chưa có khoản chi'
+      subcaption: expCount > 0 ? t('dashboard.itemCount', { count: expCount, total: vndShort(total) }) : t('dashboard.noExpenses')
     }
   })
 )
@@ -87,7 +88,7 @@ const recentTransactions = computed(() =>
   <div class="flex flex-col gap-10">
     <!-- First Viewport: Photobooth 4 Khung Composition -->
     <section v-if="store.myGroups.length" aria-labelledby="groups-overview-heading" class="grid grid-cols-1 lg:grid-cols-[1fr_440px] xl:grid-cols-[1fr_480px] gap-8 items-start">
-      <div class="flex flex-wrap gap-6 pt-2 pb-4">
+      <div class="flex flex-wrap items-start gap-6 pt-2 pb-4">
         <PhotoStrip
           v-for="item in groupStrips"
           :key="item.group.id"
@@ -108,29 +109,29 @@ const recentTransactions = computed(() =>
               {{ selectedGroup.name }}
             </h1>
             <p class="text-ink-soft text-sm mt-1">
-              {{ store.groupMembers(selectedGroup.id).length }} thành viên · tạo bởi {{ store.user(selectedGroup.createdBy)?.name }} · {{ selectedGroup.description }}
+              {{ store.groupMembers(selectedGroup.id).length }} {{ t('dashboard.members') }} · {{ t('dashboard.createdBy') }} {{ store.user(selectedGroup.createdBy)?.name }} · {{ tGroupDesc(selectedGroup.description) }}
             </p>
           </div>
           <NuxtLink :to="`/groups/${selectedGroup.id}`" class="btn btn-sm bg-lilac shrink-0">
-            Mở chi tiết nhóm
+            {{ t('dashboard.openGroupDetails') }}
           </NuxtLink>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="rounded-[14px] bg-sky p-3 sm:p-3.5 border-2 border-ink min-w-0 overflow-hidden flex flex-col justify-between">
-            <div class="text-xs font-semibold text-ink/75 truncate">Tổng chi nhóm</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('dashboard.totalGroupSpent') }}</div>
             <div class="text-base sm:text-lg xl:text-xl font-extrabold num mt-1 tracking-tight truncate" :title="vnd(selectedGroupTotal)">
               {{ vnd(selectedGroupTotal) }}
             </div>
           </div>
           <div class="rounded-[14px] bg-blush p-3 sm:p-3.5 border-2 border-ink min-w-0 overflow-hidden flex flex-col justify-between">
-            <div class="text-xs font-semibold text-ink/75 truncate">Bạn cần nhận</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('dashboard.youShouldReceive') }}</div>
             <div class="text-base sm:text-lg xl:text-xl font-extrabold num mt-1 tracking-tight gain truncate" :title="vnd(selectedGroupMyReceive)">
               {{ vnd(selectedGroupMyReceive) }}
             </div>
           </div>
           <div class="rounded-[14px] bg-ground p-3 sm:p-3.5 border-2 border-ink min-w-0 overflow-hidden flex flex-col justify-between">
-            <div class="text-xs font-semibold text-ink/75 truncate">Còn chưa trả</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('dashboard.youStillOwe') }}</div>
             <div class="text-base sm:text-lg xl:text-xl font-extrabold num mt-1 tracking-tight truncate" :title="vnd(selectedGroupUnpaid)">
               {{ vnd(selectedGroupUnpaid) }}
             </div>
@@ -155,15 +156,15 @@ const recentTransactions = computed(() =>
             <div class="min-w-0">
               <div class="text-base leading-snug">
                 <strong class="font-extrabold">{{ store.user(d.fromId)?.name }}</strong>
-                nợ
+                {{ t('groups.owes') }}
                 <strong class="font-extrabold">{{ store.user(d.toId)?.name }}</strong>
               </div>
               <div class="text-xs text-ink-soft sm:hidden hand text-base text-lilac-deep truncate">
-                {{ d.status === 'partial' ? `đã trả ${vnd(d.paid)}` : selectedGroupExpenses[0]?.title }}
+                {{ d.status === 'partial' ? t('dashboard.paidAmount', { amount: vnd(d.paid) }) : (selectedGroupExpenses[0]?.title || t('dashboard.sharedExpense')) }}
               </div>
             </div>
             <div class="hidden sm:block hand text-xl text-lilac-deep leading-snug truncate">
-              {{ d.status === 'partial' ? `đã trả một phần (${vnd(d.paid)})` : (selectedGroupExpenses[0]?.title || 'khoản chi chung') }}
+              {{ d.status === 'partial' ? t('dashboard.paidPartially', { amount: vnd(d.paid) }) : (selectedGroupExpenses[0]?.title || t('dashboard.sharedExpense')) }}
             </div>
             <div
               class="font-extrabold text-lg sm:text-xl num whitespace-nowrap text-right"
@@ -174,24 +175,24 @@ const recentTransactions = computed(() =>
           </div>
         </div>
         <p v-else class="hand text-xl text-ink-soft py-4">
-          Nhóm này đã thanh toán hết công nợ.
+          {{ t('dashboard.allDebtsSettled') }}
         </p>
 
         <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
           <div class="flex flex-wrap gap-2.5">
             <NuxtLink :to="`/groups/${selectedGroup.id}/balances`" class="btn">
-              Ghi nhận thanh toán
+              {{ t('dashboard.recordPayment') }}
             </NuxtLink>
             <NuxtLink
               v-if="selectedGroup.status === 'active'"
               :to="`/groups/${selectedGroup.id}/expenses/new`"
               class="btn btn-pink"
             >
-              Chia khoản chi mới
+              {{ t('dashboard.newExpense') }}
             </NuxtLink>
           </div>
           <NuxtLink to="/groups" class="text-sm font-semibold underline text-ink-soft hover:text-ink">
-            Quản lý tất cả {{ store.myGroups.length }} nhóm
+            {{ t('dashboard.manageGroupsCount', { count: store.myGroups.length }) }}
           </NuxtLink>
         </div>
       </div>
@@ -200,13 +201,13 @@ const recentTransactions = computed(() =>
     <DoodleScene
       v-else
       seed="first-group-empty"
-      title="Bạn chưa có nhóm chi tiêu chung nào"
-      caption="Tạo một nhóm mới để mời bạn bè, thêm hóa đơn chung và theo dõi ai nợ ai trên dải ảnh Photobooth."
+      :title="t('dashboard.emptyGroupTitle')"
+      :caption="t('dashboard.emptyGroupDesc')"
       sticker="du-lich"
     >
       <div class="flex flex-wrap justify-center gap-3">
-        <NuxtLink to="/groups" class="btn btn-ink">Tạo nhóm đầu tiên</NuxtLink>
-        <NuxtLink to="/transactions/new" class="btn bg-butter">Ghi thu chi cá nhân</NuxtLink>
+        <NuxtLink to="/groups" class="btn btn-ink">{{ t('dashboard.createFirstGroup') }}</NuxtLink>
+        <NuxtLink to="/transactions/new" class="btn bg-butter">{{ t('dashboard.recordPersonalTx') }}</NuxtLink>
       </div>
     </DoodleScene>
 
@@ -216,13 +217,13 @@ const recentTransactions = computed(() =>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 id="personal-summary-heading" class="text-2xl font-extrabold">
-              Sổ thu chi cá nhân của {{ store.me.name }}
+              {{ t('dashboard.personalBookOf', { name: store.me.name }) }}
             </h2>
             <p class="text-sm text-ink-soft mt-0.5">
-              Tách biệt hoàn toàn giữa tiền đã ứng trả cho nhóm và phần thực tế bạn phải chịu.
+              {{ t('dashboard.personalBookDesc') }}
             </p>
           </div>
-          <div class="seg" role="group" aria-label="Chọn tháng">
+          <div class="seg" role="group" :aria-label="t('reports.month')">
             <button
               v-for="m in monthOptions"
               :key="m"
@@ -230,68 +231,68 @@ const recentTransactions = computed(() =>
               :aria-pressed="month === m"
               @click="month = m"
             >
-              Tháng {{ m.slice(5, 7) }}/{{ m.slice(0, 4) }}
+              {{ t('dashboard.monthFormat', { m: m.slice(5, 7), y: m.slice(0, 4) }) }}
             </button>
           </div>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="rounded-[14px] border-2 border-ink bg-butter p-3.5 min-w-0 overflow-hidden">
-            <div class="text-xs font-semibold text-ink/75 truncate">Số dư cá nhân</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('dashboard.personalBalance') }}</div>
             <div class="text-lg sm:text-xl font-extrabold num mt-1 tracking-tight truncate">{{ vnd(monthStats.balance) }}</div>
           </div>
           <div class="rounded-[14px] border-2 border-ink bg-[var(--color-gain-bg)] p-3.5 min-w-0 overflow-hidden">
-            <div class="text-xs font-semibold text-ink/75 truncate">Tổng thu</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('dashboard.totalIncome') }}</div>
             <div class="text-lg sm:text-xl font-extrabold num mt-1 tracking-tight gain truncate">{{ vnd(monthStats.income) }}</div>
           </div>
           <div class="rounded-[14px] border-2 border-ink bg-[var(--color-loss-bg)] p-3.5 min-w-0 overflow-hidden">
-            <div class="text-xs font-semibold text-ink/75 truncate">Chi riêng</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('dashboard.personalExpense') }}</div>
             <div class="text-lg sm:text-xl font-extrabold num mt-1 tracking-tight loss truncate">{{ vnd(monthStats.expense) }}</div>
           </div>
           <div class="rounded-[14px] border-2 border-ink bg-ground p-3.5 min-w-0 overflow-hidden">
-            <div class="text-xs font-semibold text-ink/75 truncate">Phần chịu trong nhóm</div>
+            <div class="text-xs font-semibold text-ink/75 truncate">{{ t('dashboard.groupShare') }}</div>
             <div class="text-lg sm:text-xl font-extrabold num mt-1 tracking-tight truncate">{{ vnd(myGroupSpend) }}</div>
           </div>
         </div>
 
         <div>
           <div class="flex items-center justify-between mb-2">
-            <h3 class="text-base font-extrabold">Giao dịch cá nhân gần đây</h3>
+            <h3 class="text-base font-extrabold">{{ t('dashboard.recentPersonalTx') }}</h3>
             <div class="flex items-center gap-3">
-              <NuxtLink to="/transactions/new" class="text-sm font-semibold underline">Thêm giao dịch</NuxtLink>
-              <NuxtLink to="/transactions" class="text-sm font-semibold underline text-ink-soft hover:text-ink">Xem tất cả</NuxtLink>
+              <NuxtLink to="/transactions/new" class="text-sm font-semibold underline">{{ t('dashboard.addTx') }}</NuxtLink>
+              <NuxtLink to="/transactions" class="text-sm font-semibold underline text-ink-soft hover:text-ink">{{ t('dashboard.viewAll') }}</NuxtLink>
             </div>
           </div>
 
           <div v-if="recentTransactions.length" class="flex flex-col">
             <div
-              v-for="t in recentTransactions"
-              :key="t.id"
+              v-for="tx in recentTransactions"
+              :key="tx.id"
               class="row-line grid grid-cols-[44px_1fr_auto] items-center gap-3 py-2.5"
             >
               <div class="w-11 h-11 rounded-[8px] border-2 border-ink bg-ground flex items-center justify-center overflow-hidden">
                 <img
-                  :src="`/stickers/${store.category(t.categoryId)?.sticker || 'khac'}.png`"
-                  :alt="store.category(t.categoryId)?.name || 'Danh mục'"
+                  :src="`/stickers/${store.category(tx.categoryId)?.sticker || 'khac'}.png`"
+                  :alt="tCategoryName(store.category(tx.categoryId))"
                   class="w-8 h-8 object-contain"
                 />
               </div>
               <div>
-                <div class="font-bold text-[15px]">{{ t.description }}</div>
+                <div class="font-bold text-[15px]">{{ tx.description }}</div>
                 <div class="text-xs text-ink-soft">
-                  {{ store.category(t.categoryId)?.name }} · {{ t.date }}
+                  {{ tCategoryName(store.category(tx.categoryId)) }} · {{ tx.date }}
                 </div>
               </div>
               <div
                 class="font-extrabold text-base num"
-                :class="t.type === 'income' ? 'gain' : 'loss'"
+                :class="tx.type === 'income' ? 'gain' : 'loss'"
               >
-                {{ vnd(t.type === 'income' ? t.amount : -t.amount, { sign: true }) }}
+                {{ vnd(tx.type === 'income' ? tx.amount : -tx.amount, { sign: true }) }}
               </div>
             </div>
           </div>
           <p v-else class="hand text-xl text-ink-soft py-4">
-            Chưa có giao dịch cá nhân nào. Bấm "Thêm giao dịch" để ghi nhận khoản đầu tiên.
+            {{ t('dashboard.noRecentPersonalTx') }}
           </p>
         </div>
       </div>
@@ -299,25 +300,25 @@ const recentTransactions = computed(() =>
       <!-- Right column: Net balances across all groups + Activity -->
       <div class="panel p-6 sm:p-8 flex flex-col gap-5">
         <div>
-          <h2 class="text-2xl font-extrabold">Tổng hợp công nợ của bạn</h2>
+          <h2 class="text-2xl font-extrabold">{{ t('dashboard.debtSummary') }}</h2>
           <p class="text-sm text-ink-soft mt-0.5">
-            Cộng gộp trên toàn bộ nhóm đang tham gia.
+            {{ t('dashboard.debtSummaryDesc') }}
           </p>
         </div>
 
         <div class="grid grid-cols-2 gap-3.5">
           <div class="rounded-[14px] border-2 border-ink bg-[var(--color-gain-bg)] p-4">
-            <div class="text-xs font-semibold text-ink/75">Mọi người nợ bạn</div>
+            <div class="text-xs font-semibold text-ink/75">{{ t('dashboard.peopleOweYou') }}</div>
             <div class="text-2xl font-extrabold num mt-1 gain">{{ vnd(store.myNet.receive) }}</div>
           </div>
           <div class="rounded-[14px] border-2 border-ink bg-[var(--color-loss-bg)] p-4">
-            <div class="text-xs font-semibold text-ink/75">Bạn đang nợ</div>
+            <div class="text-xs font-semibold text-ink/75">{{ t('dashboard.youOwe') }}</div>
             <div class="text-2xl font-extrabold num mt-1 loss">{{ vnd(store.myNet.pay) }}</div>
           </div>
         </div>
 
         <div>
-          <h3 class="text-base font-extrabold mb-2">Các khoản cần thu & trả</h3>
+          <h3 class="text-base font-extrabold mb-2">{{ t('dashboard.debtsToCollectAndPay') }}</h3>
           <div class="flex flex-col">
             <NuxtLink
               v-for="d in store.allMyDebts"
@@ -335,10 +336,10 @@ const recentTransactions = computed(() =>
                 <div>
                   <div class="text-sm font-bold">
                     <template v-if="d.toId === store.meId">
-                      {{ store.user(d.fromId)?.name }} trả cho bạn
+                      {{ t('dashboard.paysYou', { name: store.user(d.fromId)?.name }) }}
                     </template>
                     <template v-else>
-                      Bạn trả cho {{ store.user(d.toId)?.name }}
+                      {{ t('dashboard.youPay', { name: store.user(d.toId)?.name }) }}
                     </template>
                   </div>
                   <div class="text-xs text-ink-soft">{{ store.group(d.groupId)?.name }}</div>
@@ -355,14 +356,14 @@ const recentTransactions = computed(() =>
         </div>
 
         <div class="pt-2 border-t-2 border-dashed border-line">
-          <h3 class="text-base font-extrabold mb-2">Hoạt động mới</h3>
+          <h3 class="text-base font-extrabold mb-2">{{ t('dashboard.recentActivity') }}</h3>
           <ul v-if="myActivities.length" class="flex flex-col gap-2 text-sm">
             <li v-for="act in myActivities.slice(0, 4)" :key="act.id" class="flex items-baseline justify-between gap-3">
-              <span class="truncate">{{ act.text }}</span>
+              <span class="truncate">{{ tActivity(act.text) }}</span>
               <span class="text-xs text-ink-soft shrink-0 num">{{ act.at.slice(0, 10) }}</span>
             </li>
           </ul>
-          <p v-else class="hand text-lg text-ink-soft">Chưa có hoạt động nào trong các nhóm của bạn.</p>
+          <p v-else class="hand text-lg text-ink-soft">{{ t('dashboard.noActivity') }}</p>
         </div>
       </div>
     </section>

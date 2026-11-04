@@ -22,6 +22,8 @@ export default defineNuxtConfig({
     }
   },
   app: {
+    pageTransition: false,
+    layoutTransition: false,
     head: {
       htmlAttrs: { lang: 'vi' },
       title: 'ShareSpend · Quản lý chi tiêu cá nhân & chia tiền nhóm thông minh',

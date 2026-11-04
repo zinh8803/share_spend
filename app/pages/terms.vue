@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { t } = useI18n()
 useHead({
   title: 'Chính sách sử dụng · ShareSpend'
 })
@@ -8,7 +9,7 @@ useHead({
   <div class="max-w-3xl mx-auto flex flex-col gap-8 py-2">
     <div>
       <NuxtLink to="/" class="text-sm font-semibold underline text-ink-soft hover:text-ink">
-        Quay lại trang chủ
+        {{ t('common.back') }}
       </NuxtLink>
       <h1 class="text-3xl sm:text-4xl font-extrabold mt-2 tracking-tight">Chính sách & Điều khoản sử dụng</h1>
       <p class="text-sm sm:text-base text-ink-soft mt-1.5">

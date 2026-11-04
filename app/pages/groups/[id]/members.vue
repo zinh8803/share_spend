@@ -5,6 +5,7 @@ import { vnd } from '~/utils/money'
 
 const route = useRoute()
 const store = useAppStore()
+const { t } = useI18n()
 const groupId = computed(() => String(route.params.id))
 const group = computed(() => store.group(groupId.value))
 
@@ -93,25 +94,26 @@ async function removeMember(userId: string) {
 </script>
 
 <template>
-  <div v-if="group">
+  <div class="group-page">
+    <div v-if="group">
     <GroupHeader :group-id="groupId" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-7 items-start">
       <div class="panel p-6 flex flex-col gap-4">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
           <div>
-            <h2 class="text-xl font-extrabold text-ink">Thành viên đang tham gia ({{ activeMembers.length }})</h2>
+            <h2 class="text-xl font-extrabold text-ink">{{ t('groups.activeMembers') }} ({{ activeMembers.length }})</h2>
             <p class="text-xs text-ink-soft mt-0.5">Danh sách toàn bộ thành viên đang hoạt động trong nhóm.</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="chip bg-butter">Mã mời: {{ group.inviteCode }}</span>
+            <span class="chip bg-butter">{{ t('groups.inviteCode') }} {{ group.inviteCode }}</span>
             <button
               type="button"
               class="chip hover:bg-lilac cursor-pointer transition-colors"
-              title="Sao chép link mời nhóm"
+              :title="t('groups.shareLink')"
               @click="shareLink"
             >
-              {{ copiedLink ? 'Đã sao chép link' : 'Chia sẻ link nhóm' }}
+              {{ copiedLink ? t('groups.copiedLink') : t('groups.shareLink') }}
             </button>
           </div>
         </div>
@@ -123,7 +125,7 @@ async function removeMember(userId: string) {
               v-model="searchQuery"
               type="text"
               class="field text-sm py-1.5 px-3"
-              placeholder="Tìm theo tên hoặc email thành viên..."
+              :placeholder="t('groups.searchMember')"
             />
           </div>
           <div class="text-xs font-semibold text-ink-soft">
@@ -192,7 +194,7 @@ async function removeMember(userId: string) {
         <!-- Pagination Controls -->
         <div v-if="totalPages > 1" class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-line">
           <div class="text-xs font-bold text-ink-soft">
-            Trang {{ currentPage }} / {{ totalPages }}
+            {{ t('common.page') }} {{ currentPage }} / {{ totalPages }}
           </div>
           <div class="flex items-center gap-1.5">
             <button
@@ -201,7 +203,7 @@ async function removeMember(userId: string) {
               :disabled="currentPage <= 1"
               @click="goToPage(currentPage - 1)"
             >
-              Trang trước
+              {{ t('common.prevPage') }}
             </button>
 
             <button
@@ -221,7 +223,7 @@ async function removeMember(userId: string) {
               :disabled="currentPage >= totalPages"
               @click="goToPage(currentPage + 1)"
             >
-              Trang sau
+              {{ t('common.nextPage') }}
             </button>
           </div>
         </div>
@@ -278,5 +280,6 @@ async function removeMember(userId: string) {
         </div>
       </form>
     </div>
+  </div>
   </div>
 </template>

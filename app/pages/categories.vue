@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { useAppStore, type TxType } from '~/stores/app'
 
 const store = useAppStore()
+const { t } = useI18n()
+
 const name = ref('')
 const kind = ref<TxType>('expense')
 const sticker = ref('ca-phe')
@@ -113,12 +115,12 @@ function canDelete(c: any): boolean {
   <div class="flex flex-col gap-8">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-extrabold text-ink">Danh mục thu chi</h1>
+        <h1 class="text-3xl font-extrabold text-ink">{{ t('categories.title') }}</h1>
         <p class="text-sm text-ink-soft mt-1">
-          Quản lý danh mục cá nhân và danh mục riêng cho từng nhóm chi tiêu.
+          {{ t('categories.subtitle') }}
         </p>
       </div>
-      <NuxtLink to="/transactions/new" class="btn btn-ink">Thêm giao dịch mới</NuxtLink>
+      <NuxtLink to="/transactions/new" class="btn btn-ink">{{ t('header.addTx') }}</NuxtLink>
     </div>
 
     <!-- Feedback messages -->
@@ -141,7 +143,7 @@ function canDelete(c: any): boolean {
             class="chip font-bold transition-all cursor-pointer"
             :class="filterTab === 'all' ? 'bg-ink text-white' : 'bg-paper text-ink hover:bg-ground'"
           >
-            Tất cả ({{ store.categories.length }})
+            {{ t('categories.filterAll') }} ({{ store.categories.length }})
           </button>
           <button
             type="button"
@@ -149,7 +151,7 @@ function canDelete(c: any): boolean {
             class="chip font-bold transition-all cursor-pointer"
             :class="filterTab === 'default' ? 'bg-ink text-white' : 'bg-paper text-ink hover:bg-ground'"
           >
-            Hệ thống mặc định
+            {{ t('categories.filterDefault') }}
           </button>
           <button
             type="button"
@@ -157,7 +159,7 @@ function canDelete(c: any): boolean {
             class="chip font-bold transition-all cursor-pointer"
             :class="filterTab === 'personal' ? 'bg-ink text-white' : 'bg-lilac text-ink hover:brightness-95'"
           >
-            Cá nhân của tôi
+            {{ t('categories.filterPersonal') }}
           </button>
           <button
             type="button"
@@ -165,7 +167,7 @@ function canDelete(c: any): boolean {
             class="chip font-bold transition-all cursor-pointer"
             :class="filterTab === 'group' ? 'bg-ink text-white' : 'bg-butter text-ink hover:brightness-95'"
           >
-            Theo nhóm
+            {{ t('categories.filterGroup') }}
           </button>
         </div>
 
@@ -187,19 +189,19 @@ function canDelete(c: any): boolean {
                 <div class="flex flex-wrap items-center gap-1.5 mb-1">
                   <span class="font-extrabold text-base text-ink truncate">{{ c.name }}</span>
                   <span class="chip text-[11px] py-0 px-2" :class="c.kind === 'income' ? 'bg-[var(--color-gain-bg)]' : 'bg-ground'">
-                    {{ c.kind === 'income' ? 'Thu' : 'Chi' }}
+                    {{ c.kind === 'income' ? t('common.income') : t('common.expense') }}
                   </span>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-1.5">
                   <span v-if="c.isDefault" class="chip text-[10px] py-0 px-1.5 bg-ground text-ink-soft">
-                    Mặc định
+                    {{ t('common.default') }}
                   </span>
                   <span v-else-if="!c.groupId" class="chip text-[10px] py-0 px-1.5 bg-lilac text-ink">
-                    Cá nhân
+                    {{ t('common.personal') }}
                   </span>
                   <span v-else class="chip text-[10px] py-0 px-1.5 bg-butter text-ink">
-                    Nhóm: {{ store.group(c.groupId)?.name || 'Nhóm chung' }}
+                    {{ t('categories.groupBadge') }} {{ store.group(c.groupId)?.name || 'Nhóm chung' }}
                   </span>
                 </div>
 
@@ -213,27 +215,27 @@ function canDelete(c: any): boolean {
               class="text-xs font-semibold underline text-loss cursor-pointer shrink-0 hover:opacity-80"
               @click="removeCategory(c.id)"
             >
-              Xóa
+              {{ t('common.delete') }}
             </button>
-            <span v-else-if="c.isDefault" class="text-xs text-ink-soft font-semibold shrink-0">Cố định</span>
+            <span v-else-if="c.isDefault" class="text-xs text-ink-soft font-semibold shrink-0">{{ t('categories.fixed') }}</span>
           </div>
         </div>
       </div>
 
       <!-- Creation Form -->
       <form class="panel p-6 sm:p-7 flex flex-col gap-4 bg-paper" @submit.prevent="addCategory">
-        <h2 class="text-xl font-extrabold text-ink">Tạo danh mục mới</h2>
+        <h2 class="text-xl font-extrabold text-ink">{{ t('categories.newTitle') }}</h2>
 
         <!-- Scope selection -->
         <div>
-          <label class="field-label">Phạm vi áp dụng</label>
+          <label class="field-label">{{ t('categories.scope') }}</label>
           <div class="seg">
             <button
               type="button"
               :aria-pressed="scope === 'personal'"
               @click="scope = 'personal'"
             >
-              Cá nhân (Chỉ tôi)
+              {{ t('categories.scopePersonal') }}
             </button>
             <button
               type="button"
@@ -241,19 +243,19 @@ function canDelete(c: any): boolean {
               @click="scope = 'group'"
               :disabled="myGroups.length === 0"
             >
-              Nhóm chi tiêu {{ myGroups.length === 0 ? '(Chưa có nhóm)' : '' }}
+              {{ t('categories.scopeGroup') }} {{ myGroups.length === 0 ? t('categories.scopeGroupEmpty') : '' }}
             </button>
           </div>
           <p class="text-[11px] text-ink-soft mt-1.5">
-            {{ scope === 'personal' ? 'Danh mục cá nhân chỉ hiển thị riêng cho tài khoản của bạn.' : 'Danh mục nhóm sẽ hiển thị cho tất cả thành viên trong nhóm đó.' }}
+            {{ scope === 'personal' ? t('categories.scopeHintPersonal') : t('categories.scopeHintGroup') }}
           </p>
         </div>
 
         <!-- Group Selector if scope is group -->
         <div v-if="scope === 'group'">
-          <label for="cat-group" class="field-label">Chọn nhóm chi tiêu <span class="text-loss">*</span></label>
+          <label for="cat-group" class="field-label">{{ t('categories.selectGroup') }} <span class="text-loss">*</span></label>
           <select id="cat-group" v-model="selectedGroupId" class="field" required>
-            <option value="" disabled>-- Chọn một nhóm --</option>
+            <option value="" disabled>-- {{ t('categories.selectGroup') }} --</option>
             <option v-for="g in myGroups" :key="g.id" :value="g.id">
               {{ g.name }}
             </option>
@@ -261,20 +263,20 @@ function canDelete(c: any): boolean {
         </div>
 
         <div>
-          <label for="cat-name" class="field-label">Tên danh mục <span class="text-loss">*</span></label>
+          <label for="cat-name" class="field-label">{{ t('categories.name') }} <span class="text-loss">*</span></label>
           <input id="cat-name" v-model="name" type="text" class="field" placeholder="Ví dụ: Tiền trọ, Tiệc tất niên, Thú cưng..." required />
         </div>
 
         <div>
-          <label class="field-label">Phân loại</label>
+          <label class="field-label">{{ t('categories.type') }}</label>
           <div class="seg">
-            <button type="button" :aria-pressed="kind === 'expense'" @click="kind = 'expense'">Khoản chi</button>
-            <button type="button" :aria-pressed="kind === 'income'" @click="kind = 'income'">Khoản thu</button>
+            <button type="button" :aria-pressed="kind === 'expense'" @click="kind = 'expense'">{{ t('common.expense') }}</button>
+            <button type="button" :aria-pressed="kind === 'income'" @click="kind = 'income'">{{ t('common.income') }}</button>
           </div>
         </div>
 
         <div>
-          <label class="field-label">Chọn hình minh họa 3D</label>
+          <label class="field-label">{{ t('categories.sticker') }}</label>
           <div class="grid grid-cols-4 gap-2">
             <button
               v-for="s in stickerChoices"
@@ -291,11 +293,11 @@ function canDelete(c: any): boolean {
         </div>
 
         <div>
-          <label for="cat-hint" class="field-label">Gợi ý ngắn</label>
+          <label for="cat-hint" class="field-label">{{ t('categories.hint') }}</label>
           <input id="cat-hint" v-model="hint" type="text" class="field" placeholder="Ví dụ: Ăn uống chung, tiền trúng số..." />
         </div>
 
-        <button type="submit" class="btn btn-ink self-start font-bold">Lưu danh mục</button>
+        <button type="submit" class="btn btn-ink self-start font-bold">{{ t('categories.saveBtn') }}</button>
       </form>
     </div>
   </div>
